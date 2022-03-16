@@ -1,0 +1,67 @@
+<h1>Choose a WebID</h1>
+<form method="post" id="mainForm">
+  <p class="error" id="error"></p>
+
+  <fieldset>
+    <legend>WebIDs</legend>
+    <ol id="webIdList">
+    </ol>
+    <ol>
+      <li class="checkbox">
+        <label><input type="checkbox" name="remember" value="yes" checked>Remember WebID</label>
+      </li>
+    </ol>
+  </fieldset>
+
+  <p class="actions"><button type="submit" name="submit">Choose WebID</button></p>
+
+  <ul class="actions">
+    <li><a id="register-link" href="" class="link">Sign up</a></li>
+  </ul>
+</form>
+
+<script>
+  const form = document.getElementById('mainForm');
+  const webIdList = document.getElementById('webIdList');
+
+  (async() => {
+    // GET on the JSON API will return all the WebIDs
+    const webIds = (await fetchJson('')).webIds;
+
+    // Redirect to matching login page if there is only 1 option
+    if (webIds.length === 1) {
+      const res = await fetch('', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'accept': 'application/json', 'content-type': 'application/json' },
+        body: JSON.stringify({ webId: webIds[0], remember: true }),
+      });
+      const body = await res.json();
+      location.href = body.location;
+    }
+
+    // TODO: identical to login page
+    for (const webId of webIds) {
+      const li = document.createElement('li');
+      li.classList.add('radio');
+
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'webId';
+      input.id = webId;
+      input.value = webId;
+
+      const label = document.createElement('label');
+      label.for = webId;
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(webId));
+
+      // li.appendChild(input);
+      li.appendChild(label);
+      webIdList.appendChild(li);
+    }
+  })();
+
+
+  addPostListener('mainForm', 'error', '', () => { throw new Error('Expected a location field in the response.') });
+</script>

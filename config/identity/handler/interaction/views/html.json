@@ -25,11 +25,19 @@
       },
       "templates": [
         {
-          "HtmlViewHandler:_templates_key": "@css:templates/identity/email-password/login.html.ejs",
+          "HtmlViewHandler:_templates_key": "@css:templates/identity/login.html.ejs",
           "HtmlViewHandler:_templates_value": { "@id": "urn:solid-server:auth:password:LoginRoute" }
         },
         {
-          "HtmlViewHandler:_templates_key": "@css:templates/identity/email-password/consent.html.ejs",
+          "HtmlViewHandler:_templates_key": "@css:templates/identity/email-password/login.html.ejs",
+          "HtmlViewHandler:_templates_value": { "@id": "urn:solid-server:auth:password:PasswordLoginRoute" }
+        },
+        {
+          "HtmlViewHandler:_templates_key": "@css:templates/identity/pick-webid.html.ejs",
+          "HtmlViewHandler:_templates_value": { "@id": "urn:solid-server:auth:password:PickWebIdRoute" }
+        },
+        {
+          "HtmlViewHandler:_templates_key": "@css:templates/identity/consent.html.ejs",
           "HtmlViewHandler:_templates_value": { "@id": "urn:solid-server:auth:password:ConsentRoute" }
         },
         {

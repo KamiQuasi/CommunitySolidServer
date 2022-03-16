@@ -151,6 +151,7 @@ export const SOLID_ERROR = createUriAndTermNamespace('urn:npm:solid:community-se
 );
 
 export const SOLID_HTTP = createUriAndTermNamespace('urn:npm:solid:community-server:http:',
+  'accountCookie',
   'location',
   'slug',
 );

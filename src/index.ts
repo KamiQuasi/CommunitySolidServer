@@ -61,6 +61,7 @@ export * from './http/input/identifier/TargetExtractor';
 // HTTP/Input/Metadata
 export * from './http/input/metadata/ContentLengthParser';
 export * from './http/input/metadata/ContentTypeParser';
+export * from './http/input/metadata/CookieParser';
 export * from './http/input/metadata/LinkRelParser';
 export * from './http/input/metadata/MetadataParser';
 export * from './http/input/metadata/PlainJsonLdFilter';
@@ -96,6 +97,7 @@ export * from './http/output/error/SafeErrorHandler';
 // HTTP/Output/Metadata
 export * from './http/output/metadata/AllowAcceptHeaderWriter';
 export * from './http/output/metadata/ConstantMetadataWriter';
+export * from './http/output/metadata/CookieMetadataWriter';
 export * from './http/output/metadata/LinkRelMetadataWriter';
 export * from './http/output/metadata/MappedMetadataWriter';
 export * from './http/output/metadata/MetadataWriter';
@@ -126,51 +128,72 @@ export * from './http/representation/SparqlUpdatePatch';
 export * from './http/Operation';
 export * from './http/UnsecureWebSocketsProtocol';
 
+// TODO: need to make sure registration can still be disabled
+// Identity/Account
+export * from './identity/account/Account';
+export * from './identity/account/AccountStore';
+export * from './identity/account/AccountUtil';
+export * from './identity/account/BaseAccountStore';
+
 // Identity/Configuration
 export * from './identity/configuration/IdentityProviderFactory';
 export * from './identity/configuration/ProviderFactory';
 
 // Identity/Interaction/Email-Password/Credentials
-export * from './identity/interaction/email-password/credentials/ClientCredentialsAdapterFactory';
-export * from './identity/interaction/email-password/credentials/EmailPasswordAuthorizer';
-export * from './identity/interaction/email-password/credentials/CreateCredentialsHandler';
-export * from './identity/interaction/email-password/credentials/CredentialsHandler';
-export * from './identity/interaction/email-password/credentials/DeleteCredentialsHandler';
-export * from './identity/interaction/email-password/credentials/ListCredentialsHandler';
+export * from './identity/interaction/credentials/ClientCredentialsAdapterFactory';
+export * from './identity/interaction/credentials/CreateCredentialsHandler';
+export * from './identity/interaction/credentials/DeleteCredentialsHandler';
 
 // Identity/Interaction/Email-Password/Handler
+export * from './identity/interaction/email-password/handler/BasePasswordStore';
+export * from './identity/interaction/email-password/handler/CreatePasswordHandler';
+export * from './identity/interaction/email-password/handler/DeletePasswordHandler';
 export * from './identity/interaction/email-password/handler/ForgotPasswordHandler';
-export * from './identity/interaction/email-password/handler/LoginHandler';
-export * from './identity/interaction/email-password/handler/RegistrationHandler';
+export * from './identity/interaction/email-password/handler/PasswordLoginHandler';
+export * from './identity/interaction/email-password/handler/PasswordStore';
 export * from './identity/interaction/email-password/handler/ResetPasswordHandler';
-
-// Identity/Interaction/Email-Password/Storage
-export * from './identity/interaction/email-password/storage/AccountStore';
-export * from './identity/interaction/email-password/storage/BaseAccountStore';
+export * from './identity/interaction/email-password/handler/UpdatePasswordHandler';
 
 // Identity/Interaction/Email-Password/Util
 export * from './identity/interaction/email-password/util/BaseEmailSender';
 export * from './identity/interaction/email-password/util/EmailSender';
-export * from './identity/interaction/email-password/util/RegistrationManager';
 
+// TODO: why is this not in Util? :D
 // Identity/Interaction/Email-Password
 export * from './identity/interaction/email-password/EmailPasswordUtil';
 
 // Identity/Interaction/Routing
 export * from './identity/interaction/routing/AbsolutePathInteractionRoute';
+export * from './identity/interaction/routing/IdInteractionRoute';
 export * from './identity/interaction/routing/InteractionRoute';
 export * from './identity/interaction/routing/InteractionRouteHandler';
 export * from './identity/interaction/routing/RelativePathInteractionRoute';
 
 // Identity/Interaction
-export * from './identity/interaction/BaseInteractionHandler';
+export * from './identity/interaction/AccountControlHandler';
+export * from './identity/interaction/AccountViewHandler';
+export * from './identity/interaction/ClientInfoHandler';
 export * from './identity/interaction/ConsentHandler';
 export * from './identity/interaction/ControlHandler';
-export * from './identity/interaction/FixedInteractionHandler';
+export * from './identity/interaction/CreateAccountHandler';
+export * from './identity/interaction/CreatePodHandler';
 export * from './identity/interaction/HtmlViewHandler';
 export * from './identity/interaction/InteractionHandler';
+export * from './identity/interaction/InteractionUtil';
+export * from './identity/interaction/JsonConversionHandler';
+export * from './identity/interaction/JsonInteractionHandler';
 export * from './identity/interaction/LocationInteractionHandler';
+export * from './identity/interaction/LogoutHandler';
 export * from './identity/interaction/PromptHandler';
+export * from './identity/interaction/RegistrationHandler';
+export * from './identity/interaction/ResolveLoginHandler';
+export * from './identity/interaction/StaticControlHandler';
+export * from './identity/interaction/StaticInteractionHandler';
+export * from './identity/interaction/ViewInteractionHandler';
+export * from './identity/interaction/ViewUtil';
+export * from './identity/interaction/WebIdLinker';
+export * from './identity/interaction/WebIdPicker';
+export * from './identity/interaction/WebIdUnlinker';
 
 // Identity/Ownership
 export * from './identity/ownership/NoCheckOwnershipValidator';
@@ -224,7 +247,7 @@ export * from './init/ContainerInitializer';
 export * from './init/Initializer';
 export * from './init/LoggerInitializer';
 export * from './init/ModuleVersionVerifier';
-export * from './init/SeededPodInitializer';
+export * from './init/SeededAccountInitializer';
 export * from './init/ServerInitializer';
 
 // Logging

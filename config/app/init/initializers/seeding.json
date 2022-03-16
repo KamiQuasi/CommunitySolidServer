@@ -1,0 +1,21 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
+  "@graph": [
+    {
+      "comment": "Separate handler from the RegistrationHandler in case registration is disabled.",
+      "@id": "urn:solid-server:default:SeededAccountRegistrationHandler",
+      "@type": "RegistrationHandler",
+      "accountHandler": { "@id": "urn:solid-server:auth:password:AccountViewHandler" },
+      "loginHandler": { "@id":  "urn:solid-server:auth:password:PasswordViewHandler" },
+      "podHandler": { "@id": "urn:solid-server:auth:password:RootPodViewHandler" },
+      "webIdHandler": { "@id": "urn:solid-server:auth:password:WebIdViewHandler" }
+    },
+    {
+      "comment": "Initializer that instantiates all the seeded accounts and pods.",
+      "@id": "urn:solid-server:default:SeededAccountInitializer",
+      "@type": "SeededAccountInitializer",
+      "registrationHandler": { "@id": "urn:solid-server:default:SeededAccountRegistrationHandler" },
+      "configFilePath": { "@id": "urn:solid-server:default:variable:seedConfig" }
+    }
+  ]
+}

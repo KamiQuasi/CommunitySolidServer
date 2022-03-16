@@ -1,13 +1,13 @@
 import type { Operation } from '../../../../src/http/Operation';
 import { BasicRepresentation } from '../../../../src/http/representation/BasicRepresentation';
 import type { Representation } from '../../../../src/http/representation/Representation';
-import { BaseInteractionHandler } from '../../../../src/identity/interaction/BaseInteractionHandler';
 import type { InteractionHandlerInput } from '../../../../src/identity/interaction/InteractionHandler';
+import { ViewInteractionHandler } from '../../../../src/identity/interaction/ViewInteractionHandler';
 import { APPLICATION_JSON } from '../../../../src/util/ContentTypes';
 import { MethodNotAllowedHttpError } from '../../../../src/util/errors/MethodNotAllowedHttpError';
 import { readJsonStream } from '../../../../src/util/StreamUtil';
 
-class DummyBaseInteractionHandler extends BaseInteractionHandler {
+class DummyBaseInteractionHandler extends ViewInteractionHandler {
   public constructor() {
     super({ view: 'view' });
   }

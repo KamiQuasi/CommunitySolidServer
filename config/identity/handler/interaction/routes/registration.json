@@ -1,0 +1,29 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
+  "@graph": [
+    {
+      "comment": "General registration API combining multiple handlers.",
+      "@id": "urn:solid-server:auth:password:RegistrationRouteHandler",
+      "@type": "InteractionRouteHandler",
+      "route": {
+        "@id": "urn:solid-server:auth:password:RegistrationRoute",
+        "@type": "RelativePathInteractionRoute",
+        "base": { "@id": "urn:solid-server:auth:password:IndexRoute" },
+        "relativePath": "register/"
+      },
+      "source": {
+        "comment": "TODO: check out which parts have to be moved to the registration import",
+        "@id": "urn:solid-server:auth:password:RegistrationHandler",
+        "@type": "ViewInteractionHandler",
+        "source": {
+          "comment": "TODO: define these in their corresponding configs?",
+          "@type": "RegistrationHandler",
+          "accountHandler": { "@id": "urn:solid-server:auth:password:AccountViewHandler" },
+          "loginHandler": { "@id": "urn:solid-server:auth:password:PasswordViewHandler" },
+          "podHandler": { "@id": "urn:solid-server:auth:password:PodViewHandler" },
+          "webIdHandler": { "@id": "urn:solid-server:auth:password:WebIdViewHandler" }
+        }
+      }
+    }
+  ]
+}

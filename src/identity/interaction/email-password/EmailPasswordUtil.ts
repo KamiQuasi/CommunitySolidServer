@@ -1,5 +1,6 @@
 import assert from 'assert';
 
+// TODO: might just delete this file
 /**
  * Asserts that `password` is a string that matches `confirmPassword`.
  * Will throw an Error otherwise.

@@ -109,6 +109,68 @@
   </div>
 </fieldset>
 
+<script>
+  // TODO: registration should do following steps:
+  //       1. Create account
+  //       2. Add login
+  //       3. Create pod
+  //       4. Link WebID
+  // 3 and 4 are optional based on choices.
+  // Should remember what has succeeded so far and disable HTML parts that are set?
+  // TODO: can these be combined partials of the other pages?
+  (async() => {
+    let indexJson = await fetchJson('<%= idpIndex %>');
+
+    // Create account
+    await fetch(indexJson.controls.main.account, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'accept': 'application/json' },
+    });
+
+    // Get controls now that they include account controls
+    indexJson = await fetchJson('<%= idpIndex %>');
+
+    // Add login
+    // TODO: extract email/password from page
+    await fetch(indexJson.controls.account.password, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'accept': 'application/json' },
+      body: JSON.stringify({ email: 'email', password: 'password' }),
+    });
+
+    let baseUrl;
+    let webId;
+    // Create pod (if needed)
+    // TODO: extract name from page, potentially also WebID if external
+    if (createPod) {
+      const res = await fetch(indexJson.controls.account.pod, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {'accept': 'application/json'},
+        body: JSON.stringify({name: 'name', settings: {webId: 'webID'}}),
+      });
+      ({ baseUrl, webId } = await res.json());
+    }
+
+    // Link WebID (if needed)
+    if (linkWebId) {
+      if (!webId) {
+        // TODO: extract from page
+      }
+      res = await fetch(indexJson.controls.account.webId, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'accept': 'application/json' },
+        body: JSON.stringify({ webId: 'webID' }),
+      });
+    }
+
+    // TODO: extract parameters to show response
+  })();
+</script>
+
 <!-- Assist the user with filling out the form by hiding irrelevant fields -->
 <script>
   const elements = {};

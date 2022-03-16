@@ -9,15 +9,19 @@
         "@id": "urn:solid-server:auth:password:PromptRoute",
         "@type": "RelativePathInteractionRoute",
         "base": { "@id": "urn:solid-server:auth:password:IndexRoute" },
-        "relativePath": "/prompt/"
+        "relativePath": "prompt/"
       },
       "source": {
         "@type": "PromptHandler",
         "@id": "urn:solid-server:auth:password:PromptHandler",
         "promptRoutes": [
           {
-            "PromptHandler:_promptRoutes_key": "login",
+            "PromptHandler:_promptRoutes_key": "account",
             "PromptHandler:_promptRoutes_value": { "@id": "urn:solid-server:auth:password:LoginRoute" }
+          },
+          {
+            "PromptHandler:_promptRoutes_key": "login",
+            "PromptHandler:_promptRoutes_value": { "@id": "urn:solid-server:auth:password:PickWebIdRoute" }
           },
           {
             "PromptHandler:_promptRoutes_key": "consent",

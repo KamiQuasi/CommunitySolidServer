@@ -1,8 +1,8 @@
 import type { ResourceIdentifier } from '../../../../../../src/http/representation/ResourceIdentifier';
-import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
+import type { DELETEMEAccountStore } from '../../../../../../src/identity/account/DELETEMEAccountStore';
 import {
   RegistrationManager,
-} from '../../../../../../src/identity/interaction/email-password/util/RegistrationManager';
+} from '../../../../../../src/identity/interaction/RegistrationHandler';
 import type { OwnershipValidator } from '../../../../../../src/identity/ownership/OwnershipValidator';
 import type { IdentifierGenerator } from '../../../../../../src/pods/generate/IdentifierGenerator';
 import type { PodManager } from '../../../../../../src/pods/PodManager';
@@ -27,7 +27,7 @@ describe('A RegistrationManager', (): void => {
   let podSettings: PodSettings;
   let identifierGenerator: IdentifierGenerator;
   let ownershipValidator: OwnershipValidator;
-  let accountStore: AccountStore;
+  let accountStore: DELETEMEAccountStore;
   let podManager: PodManager;
   let manager: RegistrationManager;
 

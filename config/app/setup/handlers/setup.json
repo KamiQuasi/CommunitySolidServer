@@ -14,7 +14,7 @@
         "args_handler": {
           "@type": "SetupHandler",
           "args_initializer": { "@id": "urn:solid-server:default:SetupInitializer" },
-          "args_registrationManager": { "@id": "urn:solid-server:default:SetupRegistrationManager" }
+          "args_registrationHandler": { "@id": "urn:solid-server:default:SetupRegistrationHandler" }
         },
         "args_converter": { "@id": "urn:solid-server:default:RepresentationConverter" },
         "args_storageKey": "setupCompleted-2.0",
@@ -41,15 +41,13 @@
       }
     },
     {
-      "comment": "Separate manager from the RegistrationHandler in case registration is disabled.",
-      "@id": "urn:solid-server:default:SetupRegistrationManager",
-      "@type": "RegistrationManager",
-      "args_baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
-      "args_webIdSuffix": "/profile/card#me",
-      "args_identifierGenerator": { "@id": "urn:solid-server:default:IdentifierGenerator" },
-      "args_ownershipValidator": { "@id": "urn:solid-server:auth:password:OwnershipValidator" },
-      "args_accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" },
-      "args_podManager": { "@id": "urn:solid-server:default:PodManager" }
+      "comment": "Separate handler from the RegistrationHandler in case registration is disabled. TODO: share with seed?",
+      "@id": "urn:solid-server:default:SetupRegistrationHandler",
+      "@type": "RegistrationHandler",
+      "accountHandler": { "@id": "urn:solid-server:auth:password:AccountViewHandler" },
+      "loginHandler": { "@id": "urn:solid-server:auth:password:PasswordViewHandler" },
+      "podHandler": { "@id": "urn:solid-server:auth:password:RootPodViewHandler" },
+      "webIdHandler": { "@id": "urn:solid-server:auth:password:WebIdViewHandler" }
     },
     {
       "comment": "Separate initializer as we only want a simple one that sets the root .acl.",

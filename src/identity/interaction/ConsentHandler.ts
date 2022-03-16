@@ -1,74 +1,50 @@
 import type {
-  AllClientMetadata,
   InteractionResults,
   KoaContextWithOIDC,
   UnknownObject,
 } from 'oidc-provider';
-import { BasicRepresentation } from '../../http/representation/BasicRepresentation';
-import type { Representation } from '../../http/representation/Representation';
-import { APPLICATION_JSON } from '../../util/ContentTypes';
-import { BadRequestHttpError } from '../../util/errors/BadRequestHttpError';
+import { boolean, object } from 'yup';
 import { FoundHttpError } from '../../util/errors/FoundHttpError';
 import { NotImplementedHttpError } from '../../util/errors/NotImplementedHttpError';
-import { readJsonStream } from '../../util/StreamUtil';
 import type { ProviderFactory } from '../configuration/ProviderFactory';
-import { BaseInteractionHandler } from './BaseInteractionHandler';
-import type { Interaction, InteractionHandlerInput } from './InteractionHandler';
+import type { Interaction } from './InteractionHandler';
+import { assertOidcInteraction, finishInteraction } from './InteractionUtil';
+import type { JsonInteractionHandlerInput } from './JsonInteractionHandler';
+import { JsonInteractionHandler } from './JsonInteractionHandler';
 
 type Grant = NonNullable<KoaContextWithOIDC['oidc']['entities']['Grant']>;
 
+const inSchema = object({
+  remember: boolean().default(false),
+});
+
+// TODO: tsdoc
 /**
  * Handles the OIDC consent prompts where the user confirms they want to log in for the given client.
  *
  * Returns all the relevant Client metadata on GET requests.
  */
-export class ConsentHandler extends BaseInteractionHandler {
+export class ConsentHandler extends JsonInteractionHandler {
   private readonly providerFactory: ProviderFactory;
 
   public constructor(providerFactory: ProviderFactory) {
-    super({});
+    super();
     this.providerFactory = providerFactory;
   }
 
-  public async canHandle(input: InteractionHandlerInput): Promise<void> {
-    await super.canHandle(input);
-    if (input.operation.method === 'POST' && !input.oidcInteraction) {
-      throw new BadRequestHttpError(
-        'This action can only be performed as part of an OIDC authentication flow.',
-        { errorCode: 'E0002' },
-      );
-    }
+  public async canHandle(input: JsonInteractionHandlerInput): Promise<void> {
+    // TODO: putting in handle makes for better error outputs
+    assertOidcInteraction(input.oidcInteraction);
   }
 
-  protected async handleGet(input: Required<InteractionHandlerInput>): Promise<Representation> {
-    const { operation, oidcInteraction } = input;
-    const provider = await this.providerFactory.getProvider();
-    const client = await provider.Client.find(oidcInteraction.params.client_id as string);
-    const metadata: AllClientMetadata = client?.metadata() ?? {};
+  public async handle(input: JsonInteractionHandlerInput): Promise<never> {
+    // Was validated in canHandle call
+    const oidcInteraction = input.oidcInteraction!;
+    const { remember } = await inSchema.validate(input.json);
+    const grant = await this.getGrant(oidcInteraction);
+    this.updateGrant(grant, oidcInteraction.prompt.details, Boolean(remember));
 
-    // Only extract specific fields to prevent leaking information
-    // Based on https://www.w3.org/ns/solid/oidc-context.jsonld
-    const keys = [ 'client_id', 'client_uri', 'logo_uri', 'policy_uri',
-      'client_name', 'contacts', 'grant_types', 'scope' ];
-
-    const jsonLd = Object.fromEntries(
-      keys.filter((key): boolean => key in metadata)
-        .map((key): [ string, unknown ] => [ key, metadata[key] ]),
-    );
-    jsonLd['@context'] = 'https://www.w3.org/ns/solid/oidc-context.jsonld';
-    const json = { client: jsonLd };
-
-    return new BasicRepresentation(JSON.stringify(json), operation.target, APPLICATION_JSON);
-  }
-
-  protected async handlePost({ operation, oidcInteraction }: InteractionHandlerInput): Promise<never> {
-    const { remember } = await readJsonStream(operation.body.data);
-
-    const grant = await this.getGrant(oidcInteraction!);
-    this.updateGrant(grant, oidcInteraction!.prompt.details, remember);
-
-    const location = await this.updateInteraction(oidcInteraction!, grant);
-
+    const location = await this.updateInteraction(oidcInteraction, grant);
     throw new FoundHttpError(location);
   }
 
@@ -131,12 +107,6 @@ export class ConsentHandler extends BaseInteractionHandler {
       consent.grantId = grantId;
     }
 
-    const result: InteractionResults = { consent };
-
-    // Need to merge with previous submission
-    oidcInteraction.result = { ...oidcInteraction.lastSubmission, ...result };
-    await oidcInteraction.save(oidcInteraction.exp - Math.floor(Date.now() / 1000));
-
-    return oidcInteraction.returnTo;
+    return finishInteraction(oidcInteraction, { consent }, true);
   }
 }

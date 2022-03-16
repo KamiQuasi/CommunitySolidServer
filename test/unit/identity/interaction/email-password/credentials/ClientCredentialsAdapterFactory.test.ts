@@ -2,10 +2,10 @@ import type { Adapter } from 'oidc-provider';
 import {
   ClientCredentialsAdapter,
   ClientCredentialsAdapterFactory,
-} from '../../../../../../src/identity/interaction/email-password/credentials/ClientCredentialsAdapterFactory';
+} from '../../../../../../src/identity/interaction/credentials/ClientCredentialsAdapterFactory';
 import type {
   ClientCredentials,
-} from '../../../../../../src/identity/interaction/email-password/credentials/ClientCredentialsAdapterFactory';
+} from '../../../../../../src/identity/interaction/credentials/ClientCredentialsAdapterFactory';
 import type { AdapterFactory } from '../../../../../../src/identity/storage/AdapterFactory';
 import type { KeyValueStorage } from '../../../../../../src/storage/keyvalue/KeyValueStorage';
 

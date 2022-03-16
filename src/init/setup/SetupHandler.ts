@@ -1,19 +1,24 @@
-import { BasicRepresentation } from '../../http/representation/BasicRepresentation';
-import type { Representation } from '../../http/representation/Representation';
-import { BaseInteractionHandler } from '../../identity/interaction/BaseInteractionHandler';
-import type { RegistrationManager } from '../../identity/interaction/email-password/util/RegistrationManager';
-import type { InteractionHandlerInput } from '../../identity/interaction/InteractionHandler';
+import { boolean, object } from 'yup';
+import type { AssertsShape } from 'yup/lib/object';
+import type { RepresentationMetadata } from '../../http/representation/RepresentationMetadata';
+import type {
+  Json,
+  JsonInteractionHandlerInput,
+  JsonRepresentation,
+} from '../../identity/interaction/JsonInteractionHandler';
+import { JsonInteractionHandler } from '../../identity/interaction/JsonInteractionHandler';
+import { parseSchema } from '../../identity/interaction/ViewUtil';
+import type { JsonView } from '../../identity/interaction/ViewUtil';
 import { getLoggerFor } from '../../logging/LogUtil';
-import { APPLICATION_JSON } from '../../util/ContentTypes';
 import { NotImplementedHttpError } from '../../util/errors/NotImplementedHttpError';
-import { readJsonStream } from '../../util/StreamUtil';
 import type { Initializer } from '../Initializer';
 
+// TODO:
 export interface SetupHandlerArgs {
   /**
    * Used for registering a pod during setup.
    */
-  registrationManager?: RegistrationManager;
+  registrationHandler?: JsonInteractionHandler & JsonView;
   /**
    * Initializer to call in case no registration procedure needs to happen.
    * This Initializer should make sure the necessary resources are there so the server can work correctly.
@@ -21,37 +26,61 @@ export interface SetupHandlerArgs {
   initializer?: Initializer;
 }
 
+const inSchema = object({
+  registration: object().optional(),
+  initialize: boolean().default(false),
+});
+
+// TODO: add method filter handler + JsonConversionHandler, could also add JsonView interface
+
+// TODO: problem is that everything needs to happen in 1 request
+//       if we still want this might need to rewrite registration manager
+//       problem is that this forces us into email/password registration again
+//       unless extra parameters (e.g. type: 'password') are sent along as extra metadata
+//       only account registration is needed though? rest can be done later?
+
 /**
  * On POST requests, runs an initializer and/or performs a registration step, both optional.
  */
-export class SetupHandler extends BaseInteractionHandler {
+export class SetupHandler extends JsonInteractionHandler implements JsonView {
   protected readonly logger = getLoggerFor(this);
 
-  private readonly registrationManager?: RegistrationManager;
+  private readonly registrationHandler?: JsonInteractionHandler & JsonView;
   private readonly initializer?: Initializer;
 
   public constructor(args: SetupHandlerArgs) {
-    super({});
-    this.registrationManager = args.registrationManager;
+    super();
+    this.registrationHandler = args.registrationHandler;
     this.initializer = args.initializer;
   }
 
-  protected async handlePost({ operation }: InteractionHandlerInput): Promise<Representation> {
-    const json = operation.body.isEmpty ? {} : await readJsonStream(operation.body.data);
+  public async getView(input: JsonInteractionHandlerInput): Promise<JsonRepresentation> {
+    // TODO
+    const json = parseSchema(inSchema);
+    if (this.registrationHandler) {
+      const registrationView = await this.registrationHandler.getView(input);
+      json.fields.registration = { ...registrationView.json, ...json.fields.registration };
+    }
+    return { json };
+  }
 
-    const output: Record<string, any> = { initialize: false, registration: false };
-    if (json.registration) {
-      Object.assign(output, await this.register(json));
-      output.registration = true;
-    } else if (json.initialize) {
+  public async handle(input: JsonInteractionHandlerInput): Promise<JsonRepresentation> {
+    const validated = await inSchema.validate(input.json);
+    const json: { registration?: Json; initialize?: boolean } = {};
+    let metadata: RepresentationMetadata | undefined;
+    if (validated.registration) {
+      const representation = await this.register(input, validated);
+      json.registration = representation.json;
+      ({ metadata } = representation);
+    } else if (validated.initialize) {
       // We only want to initialize if no registration happened
       await this.initialize();
-      output.initialize = true;
+      json.initialize = true;
     }
 
-    this.logger.debug(`Output: ${JSON.stringify(output)}`);
+    this.logger.debug(`Setup result: ${JSON.stringify(json)}`);
 
-    return new BasicRepresentation(JSON.stringify(output), APPLICATION_JSON);
+    return { json, metadata };
   }
 
   /**
@@ -69,15 +98,10 @@ export class SetupHandler extends BaseInteractionHandler {
    * Register a user based on the given input.
    * Errors if no registration manager is defined.
    */
-  private async register(json: NodeJS.Dict<any>): Promise<Record<string, any>> {
-    if (!this.registrationManager) {
+  private async register(input: JsonInteractionHandlerInput, validated: AssertsShape<typeof inSchema.fields>): Promise<JsonRepresentation> {
+    if (!this.registrationHandler) {
       throw new NotImplementedHttpError('This server is not configured to support registration during setup.');
     }
-    // Validate the input JSON
-    const validated = this.registrationManager.validateInput(json, true);
-    this.logger.debug(`Validated input: ${JSON.stringify(validated)}`);
-
-    // Register and/or create a pod as requested. Potentially does nothing if all booleans are false.
-    return this.registrationManager.register(validated, true);
+    return this.registrationHandler.handleSafe({ ...input, ...validated.registration });
   }
 }

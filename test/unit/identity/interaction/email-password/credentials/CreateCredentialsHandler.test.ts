@@ -2,13 +2,13 @@ import type { Operation } from '../../../../../../src/http/Operation';
 import { BasicRepresentation } from '../../../../../../src/http/representation/BasicRepresentation';
 import type {
   ClientCredentials,
-} from '../../../../../../src/identity/interaction/email-password/credentials/ClientCredentialsAdapterFactory';
+} from '../../../../../../src/identity/interaction/credentials/ClientCredentialsAdapterFactory';
 import {
   CreateCredentialsHandler,
-} from '../../../../../../src/identity/interaction/email-password/credentials/CreateCredentialsHandler';
+} from '../../../../../../src/identity/interaction/credentials/CreateCredentialsHandler';
 import type {
   CredentialsHandlerBody,
-} from '../../../../../../src/identity/interaction/email-password/credentials/CredentialsHandler';
+} from '../../../../../../src/identity/interaction/credentials/CredentialsHandler';
 import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
 import type { KeyValueStorage } from '../../../../../../src/storage/keyvalue/KeyValueStorage';
 import { APPLICATION_JSON } from '../../../../../../src/util/ContentTypes';

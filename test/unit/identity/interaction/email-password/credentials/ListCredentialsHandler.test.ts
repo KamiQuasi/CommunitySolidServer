@@ -2,10 +2,10 @@ import type { Operation } from '../../../../../../src/http/Operation';
 import { BasicRepresentation } from '../../../../../../src/http/representation/BasicRepresentation';
 import type {
   CredentialsHandlerBody,
-} from '../../../../../../src/identity/interaction/email-password/credentials/CredentialsHandler';
+} from '../../../../../../src/identity/interaction/credentials/CredentialsHandler';
 import {
   ListCredentialsHandler,
-} from '../../../../../../src/identity/interaction/email-password/credentials/ListCredentialsHandler';
+} from '../../../../../../src/identity/interaction/credentials/ListCredentialsHandler';
 import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
 import { APPLICATION_JSON } from '../../../../../../src/util/ContentTypes';
 import { readJsonStream } from '../../../../../../src/util/StreamUtil';

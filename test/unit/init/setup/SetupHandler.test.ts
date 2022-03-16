@@ -1,7 +1,7 @@
 import type { Operation } from '../../../../src/http/Operation';
 import { BasicRepresentation } from '../../../../src/http/representation/BasicRepresentation';
 import type { RegistrationResponse,
-  RegistrationManager } from '../../../../src/identity/interaction/email-password/util/RegistrationManager';
+  RegistrationManager } from '../../../../src/identity/interaction/RegistrationHandler';
 import type { Initializer } from '../../../../src/init/Initializer';
 import { SetupHandler } from '../../../../src/init/setup/SetupHandler';
 import { NotImplementedHttpError } from '../../../../src/util/errors/NotImplementedHttpError';

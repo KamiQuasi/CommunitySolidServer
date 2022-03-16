@@ -7,8 +7,8 @@ import type { AuxiliaryIdentifierStrategy } from '../../../src/http/auxiliary/Au
 import type { ResourceIdentifier } from '../../../src/http/representation/ResourceIdentifier';
 import type {
   AccountSettings,
-  AccountStore,
-} from '../../../src/identity/interaction/email-password/storage/AccountStore';
+  DELETEMEAccountStore,
+} from '../../../src/identity/account/DELETEMEAccountStore';
 
 describe('An OwnerPermissionReader', (): void => {
   const owner = 'http://test.com/alice/profile/card#me';
@@ -17,7 +17,7 @@ describe('An OwnerPermissionReader', (): void => {
   let identifier: ResourceIdentifier;
   let modes: Set<AccessMode>;
   let settings: AccountSettings;
-  let accountStore: jest.Mocked<AccountStore>;
+  let accountStore: jest.Mocked<DELETEMEAccountStore>;
   let aclStrategy: jest.Mocked<AuxiliaryIdentifierStrategy>;
   let reader: OwnerPermissionReader;
 

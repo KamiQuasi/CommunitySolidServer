@@ -1,0 +1,24 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
+  "@graph": [
+    {
+      "comment": "Handles picking a WebID during an OIDC interaction.",
+      "@id": "urn:solid-server:auth:password:PickWebIdRouteHandler",
+      "@type": "InteractionRouteHandler",
+      "route": {
+        "@id": "urn:solid-server:auth:password:PickWebIdRoute",
+        "@type": "RelativePathInteractionRoute",
+        "base": { "@id": "urn:solid-server:auth:password:IndexRoute" },
+        "relativePath": "webid/"
+      },
+      "source": {
+        "@id": "urn:solid-server:auth:password:WebIdPicker",
+        "@type": "ViewInteractionHandler",
+        "source": {
+          "@type": "WebIdPicker",
+          "accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" }
+        }
+      }
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 import { CredentialGroup } from '../authentication/Credentials';
 import type { AuxiliaryIdentifierStrategy } from '../http/auxiliary/AuxiliaryIdentifierStrategy';
-import type { AccountSettings, AccountStore } from '../identity/interaction/email-password/storage/AccountStore';
+import type { AccountStore } from '../identity/account/AccountStore';
 import { getLoggerFor } from '../logging/LogUtil';
 import { createErrorMessage } from '../util/errors/ErrorUtil';
+import { InternalServerError } from '../util/errors/InternalServerError';
 import { NotImplementedHttpError } from '../util/errors/NotImplementedHttpError';
 import type { PermissionReaderInput } from './PermissionReader';
 import { PermissionReader } from './PermissionReader';
@@ -54,17 +55,19 @@ export class OwnerPermissionReader extends PermissionReader {
     if (!credentials.agent?.webId) {
       throw new NotImplementedHttpError('Only authenticated agents could be owners');
     }
-    let settings: AccountSettings;
-    try {
-      settings = await this.accountStore.getSettings(credentials.agent.webId);
-    } catch {
+    const accountId = await this.accountStore.findByWebId(credentials.agent.webId);
+    if (!accountId) {
       throw new NotImplementedHttpError('No account registered for this WebID');
     }
-    if (!settings.podBaseUrl) {
-      throw new NotImplementedHttpError('This agent has no pod on the server');
+    const account = await this.accountStore.find(accountId);
+    if (!account) {
+      this.logger.error(`Found invalid account ID ${accountId} through WebID ${credentials.agent.webId}`);
+      throw new InternalServerError(`Invalid account ID ${accountId}`);
     }
-    if (!identifier.path.startsWith(settings.podBaseUrl)) {
-      throw new NotImplementedHttpError('Not targeting the pod owned by this agent');
+
+    const pods = Object.keys(account.pods);
+    if (!pods.some((pod): boolean => identifier.path.startsWith(pod))) {
+      throw new NotImplementedHttpError('Not targeting a pod owned by this agent');
     }
   }
 }

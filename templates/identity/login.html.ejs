@@ -1,0 +1,56 @@
+<h1>Choose a login method</h1>
+<form method="post" id="mainForm">
+  <fieldset>
+    <legend>Login methods</legend>
+    <ol id="loginList">
+    </ol>
+  </fieldset>
+
+  <p class="actions"><button type="submit" name="submit">Choose login method</button></p>
+
+  <ul class="actions">
+    <li><a id="register-link" href="" class="link">Sign up</a></li>
+  </ul>
+</form>
+
+<script>
+  const form = document.getElementById('mainForm');
+  const loginList = document.getElementById('loginList');
+  let loginJson;
+
+  (async() => {
+    const indexJson = await fetchJson('<%= idpIndex %>');
+    loginJson = await fetchJson(indexJson.controls.main.login);
+    const loginKeys = Object.keys(loginJson.logins);
+
+    // Redirect to matching login page if there is only 1 option
+    if (loginKeys.length === 1) {
+      location.href = loginJson.logins[loginKeys[0]];
+    }
+
+    for (const key of loginKeys) {
+      const li = document.createElement('li');
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'loginMethod';
+      input.value = key;
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(key));
+      li.appendChild(label);
+      loginList.appendChild(li);
+    }
+  })();
+
+  form.addEventListener('submit', async(event) => {
+    event.preventDefault();
+
+    if (!loginJson) {
+      // Can potentially happen if button is clicked before JSON is loaded
+      return;
+    }
+
+    const formData = new FormData(form);
+    location.href = loginJson.logins[formData.get('loginMethod')];
+  });
+</script>

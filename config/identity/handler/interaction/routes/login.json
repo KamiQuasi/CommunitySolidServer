@@ -2,19 +2,26 @@
   "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
   "@graph": [
     {
-      "comment": "Handles the login interaction",
+      "comment": "Entry point for all login options. Shows all available login options.",
       "@id": "urn:solid-server:auth:password:LoginRouteHandler",
       "@type": "InteractionRouteHandler",
       "route": {
         "@id": "urn:solid-server:auth:password:LoginRoute",
         "@type": "RelativePathInteractionRoute",
         "base": { "@id": "urn:solid-server:auth:password:IndexRoute" },
-        "relativePath": "/login/"
+        "relativePath": "login/"
       },
       "source": {
-        "@id": "urn:solid-server:auth:password:LoginHandler",
-        "@type": "LoginHandler",
-        "accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" }
+        "@type": "MethodFilterHandler",
+        "methods": [ "GET" ],
+        "source": {
+          "@type": "StaticControlHandler",
+          "name": "logins",
+          "controls": [{
+            "StaticControlHandler:_controls_key": "password",
+            "StaticControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:PasswordLoginRoute" }
+          }]
+        }
       }
     }
   ]

@@ -8,12 +8,15 @@
       "route": {
         "@id": "urn:solid-server:auth:password:IndexRoute",
         "@type": "RelativePathInteractionRoute",
-        "base": { "@id": "urn:solid-server:default:variable:baseUrl" },
-        "relativePath": "/idp/"
+        "base": {
+          "@type": "AbsolutePathInteractionRoute",
+          "path": { "@id": "urn:solid-server:default:variable:baseUrl" }
+        },
+        "relativePath": ".account/"
       },
       "source": {
         "@id": "urn:solid-server:auth:password:IndexHandler",
-        "@type": "FixedInteractionHandler",
+        "@type": "StaticInteractionHandler",
         "response": {}
       }
     }

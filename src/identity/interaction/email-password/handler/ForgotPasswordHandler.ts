@@ -1,24 +1,21 @@
-import assert from 'assert';
-import { BasicRepresentation } from '../../../../http/representation/BasicRepresentation';
-import type { Representation } from '../../../../http/representation/Representation';
+import { object, string } from 'yup';
 import { getLoggerFor } from '../../../../logging/LogUtil';
-import { APPLICATION_JSON } from '../../../../util/ContentTypes';
-import { readJsonStream } from '../../../../util/StreamUtil';
 import type { TemplateEngine } from '../../../../util/templates/TemplateEngine';
-import { BaseInteractionHandler } from '../../BaseInteractionHandler';
-import type { InteractionHandlerInput } from '../../InteractionHandler';
+import type { JsonInteractionHandlerInput, JsonRepresentation } from '../../JsonInteractionHandler';
+import { JsonInteractionHandler } from '../../JsonInteractionHandler';
 import type { InteractionRoute } from '../../routing/InteractionRoute';
-import type { AccountStore } from '../storage/AccountStore';
+import { parseSchema } from '../../ViewUtil';
+import type { JsonView } from '../../ViewUtil';
 import type { EmailSender } from '../util/EmailSender';
+import type { PasswordStore } from './PasswordStore';
+import Dict = NodeJS.Dict;
 
-const forgotPasswordView = {
-  required: {
-    email: 'string',
-  },
-} as const;
+const inSchema = object({
+  email: string().trim().email().required(),
+});
 
 export interface ForgotPasswordHandlerArgs {
-  accountStore: AccountStore;
+  passwordStore: PasswordStore;
   templateEngine: TemplateEngine<{ resetLink: string }>;
   emailSender: EmailSender;
   resetRoute: InteractionRoute;
@@ -27,29 +24,31 @@ export interface ForgotPasswordHandlerArgs {
 /**
  * Handles the submission of the ForgotPassword form
  */
-export class ForgotPasswordHandler extends BaseInteractionHandler {
+export class ForgotPasswordHandler extends JsonInteractionHandler implements JsonView {
   protected readonly logger = getLoggerFor(this);
 
-  private readonly accountStore: AccountStore;
+  private readonly passwordStore: PasswordStore;
   private readonly templateEngine: TemplateEngine<{ resetLink: string }>;
   private readonly emailSender: EmailSender;
   private readonly resetRoute: InteractionRoute;
 
   public constructor(args: ForgotPasswordHandlerArgs) {
-    super(forgotPasswordView);
-    this.accountStore = args.accountStore;
+    super();
+    this.passwordStore = args.passwordStore;
     this.templateEngine = args.templateEngine;
     this.emailSender = args.emailSender;
     this.resetRoute = args.resetRoute;
   }
 
-  public async handlePost({ operation }: InteractionHandlerInput): Promise<Representation> {
-    // Validate incoming data
-    const { email } = await readJsonStream(operation.body.data);
-    assert(typeof email === 'string' && email.length > 0, 'Email required');
+  public async getView(): Promise<JsonRepresentation> {
+    return { json: parseSchema(inSchema) };
+  }
+
+  public async handle({ json }: JsonInteractionHandlerInput): Promise<JsonRepresentation> {
+    const { email } = await inSchema.validate(json);
 
     await this.resetPassword(email);
-    return new BasicRepresentation(JSON.stringify({ email }), operation.target, APPLICATION_JSON);
+    return { json: { email }};
   }
 
   /**
@@ -60,7 +59,7 @@ export class ForgotPasswordHandler extends BaseInteractionHandler {
   private async resetPassword(email: string): Promise<void> {
     let recordId: string;
     try {
-      recordId = await this.accountStore.generateForgotPasswordRecord(email);
+      recordId = await this.passwordStore.generateForgotPasswordRecord(email);
     } catch {
       // Don't emit an error for privacy reasons
       this.logger.warn(`Password reset request for unknown email ${email}`);
@@ -74,7 +73,7 @@ export class ForgotPasswordHandler extends BaseInteractionHandler {
    */
   private async sendResetMail(recordId: string, email: string): Promise<void> {
     this.logger.info(`Sending password reset to ${email}`);
-    const resetLink = `${this.resetRoute.getPath()}?rid=${encodeURIComponent(recordId)}`;
+    const resetLink = `${this.resetRoute.getPath({})}?rid=${encodeURIComponent(recordId)}`;
     const renderedEmail = await this.templateEngine.render({ resetLink });
     await this.emailSender.handleSafe({
       recipient: email,

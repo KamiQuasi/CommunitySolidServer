@@ -5,10 +5,11 @@
       "comment": "An adapter is responsible for storing all interaction metadata.",
       "@id": "urn:solid-server:default:IdpAdapterFactory",
       "@type": "ClientCredentialsAdapterFactory",
+      "accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" },
       "storage": { "@id": "urn:solid-server:auth:password:CredentialsStorage" },
       "source": {
         "@type": "WebIdAdapterFactory",
-        "converter": {"@id": "urn:solid-server:default:RepresentationConverter" },
+        "converter": { "@id": "urn:solid-server:default:RepresentationConverter" },
         "source": {
           "@type": "ExpiringAdapterFactory",
           "storage": {

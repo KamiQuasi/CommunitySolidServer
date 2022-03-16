@@ -1,8 +1,8 @@
 import type { Operation } from '../../../../../../src/http/Operation';
+import type { DELETEMEAccountStore } from '../../../../../../src/identity/account/DELETEMEAccountStore';
 import {
   ResetPasswordHandler,
 } from '../../../../../../src/identity/interaction/email-password/handler/ResetPasswordHandler';
-import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
 import { readJsonStream } from '../../../../../../src/util/StreamUtil';
 import { createPostJsonOperation } from './Util';
 
@@ -11,7 +11,7 @@ describe('A ResetPasswordHandler', (): void => {
   const recordId = '123456';
   const url = `/resetURL/${recordId}`;
   const email = 'alice@test.email';
-  let accountStore: AccountStore;
+  let accountStore: DELETEMEAccountStore;
   let handler: ResetPasswordHandler;
 
   beforeEach(async(): Promise<void> => {

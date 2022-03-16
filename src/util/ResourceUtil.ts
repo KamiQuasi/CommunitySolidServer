@@ -3,9 +3,12 @@ import { DataFactory } from 'n3';
 import { BasicRepresentation } from '../http/representation/BasicRepresentation';
 import type { Representation } from '../http/representation/Representation';
 import { RepresentationMetadata } from '../http/representation/RepresentationMetadata';
+import type { ResourceIdentifier } from '../http/representation/ResourceIdentifier';
+import type { ResourceStore } from '../storage/ResourceStore';
+import type { IdentifierStrategy } from './identifiers/IdentifierStrategy';
 import { guardedStreamFrom } from './StreamUtil';
 import { toLiteral } from './TermUtil';
-import { CONTENT_TYPE_TERM, DC, LDP, RDF, SOLID_META, XSD } from './Vocabularies';
+import { CONTENT_TYPE_TERM, DC, LDP, PIM, RDF, SOLID_META, XSD } from './Vocabularies';
 import namedNode = DataFactory.namedNode;
 
 /**
@@ -64,4 +67,25 @@ export async function cloneRepresentation(representation: Representation): Promi
   );
   representation.data = guardedStreamFrom(data);
   return result;
+}
+
+/**
+ * Finds the root storage container of the given identifier.
+ * Returns undefined if no match was found due to there not being a storage or the identifier not being in scope.
+ * @param identifier - Identifier of which to find the containing storage.
+ * @param store - Store in which the parent containers can be found.
+ * @param strategy - Strategy used to find the parent container of a resource.
+ */
+export async function findStorage(identifier: ResourceIdentifier, store: ResourceStore, strategy: IdentifierStrategy): Promise<ResourceIdentifier | undefined> {
+  try {
+    const representation = await store.getRepresentation(identifier, {});
+    representation.data.destroy();
+    if (representation.metadata.has(RDF.terms.type, PIM.terms.Storage)) {
+      return identifier;
+    }
+    const parent = strategy.getParentContainer(identifier);
+    return findStorage(parent, store, strategy);
+  } catch {
+    // Ignore errors
+  }
 }

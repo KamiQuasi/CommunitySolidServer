@@ -1,5 +1,5 @@
-import { LoginHandler } from '../../../../../../src/identity/interaction/email-password/handler/LoginHandler';
-import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
+import type { DELETEMEAccountStore } from '../../../../../../src/identity/account/DELETEMEAccountStore';
+import { PasswordLoginHandler } from '../../../../../../src/identity/interaction/email-password/handler/PasswordLoginHandler';
 import type {
   Interaction,
   InteractionHandlerInput,
@@ -12,8 +12,8 @@ describe('A LoginHandler', (): void => {
   const email = 'alice@test.email';
   let oidcInteraction: jest.Mocked<Interaction>;
   let input: Required<InteractionHandlerInput>;
-  let accountStore: jest.Mocked<AccountStore>;
-  let handler: LoginHandler;
+  let accountStore: jest.Mocked<DELETEMEAccountStore>;
+  let handler: PasswordLoginHandler;
 
   beforeEach(async(): Promise<void> => {
     oidcInteraction = {
@@ -28,7 +28,7 @@ describe('A LoginHandler', (): void => {
       getSettings: jest.fn().mockResolvedValue({ useIdp: true }),
     } as any;
 
-    handler = new LoginHandler(accountStore);
+    handler = new PasswordLoginHandler(accountStore);
   });
   it('errors if no oidcInteraction is defined on POST requests.', async(): Promise<void> => {
     const error = expect.objectContaining({

@@ -12,11 +12,16 @@
 async function postJsonForm(formId, target = '') {
   const form = document.getElementById(formId);
   const formData = new FormData(form);
+  const json = Object.fromEntries(formData)
+  if (json.remember) {
+    // TODO: very hacky but need boolean. Should somehow indicate which fields are booleans
+    json.remember = true;
+  }
   const res = await fetch(target, {
     method: 'POST',
     credentials: 'include',
     headers: { 'accept': 'application/json', 'content-type': 'application/json' },
-    body: JSON.stringify(Object.fromEntries(formData)),
+    body: JSON.stringify(json),
   });
   if (res.status >= 400) {
     const error = await res.json();

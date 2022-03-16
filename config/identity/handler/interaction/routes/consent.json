@@ -9,12 +9,29 @@
         "@id": "urn:solid-server:auth:password:ConsentRoute",
         "@type": "RelativePathInteractionRoute",
         "base": { "@id": "urn:solid-server:auth:password:IndexRoute" },
-        "relativePath": "/consent/"
+        "relativePath": "consent/"
       },
       "source": {
         "@id": "urn:solid-server:auth:password:ConsentHandler",
-        "@type": "ConsentHandler",
-        "providerFactory": { "@id": "urn:solid-server:default:IdentityProviderFactory" }
+        "@type": "WaterfallHandler",
+        "handlers": [
+          {
+            "@type": "MethodFilterHandler",
+            "methods": [ "GET" ],
+            "source": {
+              "@type": "ClientInfoHandler",
+              "providerFactory": { "@id": "urn:solid-server:default:IdentityProviderFactory" }
+            }
+          },
+          {
+            "@type": "MethodFilterHandler",
+            "methods": [ "POST" ],
+            "source": {
+              "@type": "ConsentHandler",
+              "providerFactory": { "@id": "urn:solid-server:default:IdentityProviderFactory" }
+            }
+          }
+        ]
       }
     }
   ]

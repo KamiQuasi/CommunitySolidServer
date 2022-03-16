@@ -60,17 +60,17 @@
           }
         },
         {
-          "CombinedSettingsResolver:_resolvers_key": "urn:solid-server:default:variable:seededPodConfigJson",
+          "CombinedSettingsResolver:_resolvers_key": "urn:solid-server:default:variable:seedConfig",
           "CombinedSettingsResolver:_resolvers_value": {
             "@type": "AssetPathExtractor",
-            "key": "seededPodConfigJson"
+            "key": "seedConfig"
           }
         },
         {
           "CombinedSettingsResolver:_resolvers_key": "urn:solid-server:default:variable:workers",
           "CombinedSettingsResolver:_resolvers_value": {
             "@type": "KeyExtractor",
-            "key": "workers", 
+            "key": "workers",
             "defaultValue": 1
           }
         }

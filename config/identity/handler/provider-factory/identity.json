@@ -4,15 +4,17 @@
     {
       "comment": [
         "Sets all the relevant Solid-OIDC parameters.",
-        "dPoP is draft-01 since that is the latest version v6 of the OIDC library supports."
+        "dPoP is draft-03 since that is the latest version v7 of the OIDC library supports.",
+        "TODO: delete accountstore"
       ],
       "@id": "urn:solid-server:default:IdentityProviderFactory",
       "@type": "IdentityProviderFactory",
+      "args_accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" },
       "args_adapterFactory": { "@id": "urn:solid-server:default:IdpAdapterFactory" },
       "args_baseUrl": { "@id": "urn:solid-server:default:variable:baseUrl" },
       "args_oidcPath": "/.oidc",
       "args_interactionHandler": { "@id": "urn:solid-server:auth:password:PromptHandler" },
-      "args_credentialStorage": { "@id": "urn:solid-server:auth:password:CredentialsStorage" },
+      "args_credentialsStorage": { "@id": "urn:solid-server:auth:password:CredentialsStorage" },
       "args_storage": {
         "@type": "EncodingPathStorage",
         "relativePath": "/idp/keys/",

@@ -1,13 +1,26 @@
 {
   "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
   "import": [
+    "css:config/identity/handler/interaction/routes/account.json",
+    "css:config/identity/handler/interaction/routes/account-id.json",
     "css:config/identity/handler/interaction/routes/consent.json",
     "css:config/identity/handler/interaction/routes/credentials.json",
+    "css:config/identity/handler/interaction/routes/credentials-id.json",
     "css:config/identity/handler/interaction/routes/forgot-password.json",
     "css:config/identity/handler/interaction/routes/index.json",
     "css:config/identity/handler/interaction/routes/login.json",
+    "css:config/identity/handler/interaction/routes/logout.json",
+    "css:config/identity/handler/interaction/routes/password.json",
+    "css:config/identity/handler/interaction/routes/password-id.json",
+    "css:config/identity/handler/interaction/routes/password-login.json",
+    "css:config/identity/handler/interaction/routes/pick-webid.json",
+    "css:config/identity/handler/interaction/routes/pod.json",
     "css:config/identity/handler/interaction/routes/prompt.json",
+    "css:config/identity/handler/interaction/routes/registration.json",
     "css:config/identity/handler/interaction/routes/reset-password.json",
+    "css:config/identity/handler/interaction/routes/webid.json",
+    "css:config/identity/handler/interaction/routes/webid-link.json",
+
     "css:config/identity/handler/interaction/views/controls.json",
     "css:config/identity/handler/interaction/views/html.json"
   ],
@@ -17,16 +30,22 @@
       "@type": "WaterfallHandler",
       "handlers": [
         {
-          "comment": "Returns the relevant HTML pages for the interactions when needed",
+          "comment": "Returns the relevant HTML pages for the interactions when needed.",
           "@id": "urn:solid-server:auth:password:HtmlViewHandler"
         },
         {
-          "comment": "Adds controls and API version to JSON responses.",
-          "@id": "urn:solid-server:auth:password:ControlHandler",
-          "@type": "ControlHandler",
-          "source" : { "@id": "urn:solid-server:auth:password:LocationInteractionHandler" }
+          "comment": "Convert incoming requests to JSON operations.",
+          "@type": "JsonConversionHandler",
+          "source": { "@id": "urn:solid-server:auth:password:ControlHandler" },
+          "converter": { "@id": "urn:solid-server:default:RepresentationConverter" }
         }
       ]
+    },
+    {
+      "comment": "Adds controls and API version to JSON responses.",
+      "@id": "urn:solid-server:auth:password:ControlHandler",
+      "@type": "ControlHandler",
+      "source" : { "@id": "urn:solid-server:auth:password:LocationInteractionHandler" }
     },
     {
       "comment": "Converts 3xx redirects to 200 JSON responses for consumption by browser scripts.",
@@ -39,13 +58,25 @@
       "@id": "urn:solid-server:auth:password:InteractionRouteHandler",
       "@type": "WaterfallHandler",
       "handlers": [
-        { "@id": "urn:solid-server:auth:password:IndexRouteHandler" },
-        { "@id": "urn:solid-server:auth:password:PromptRouteHandler" },
-        { "@id": "urn:solid-server:auth:password:LoginRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:AccountRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:AccountIdRouteHandler" },
         { "@id": "urn:solid-server:auth:password:ConsentRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:CredentialsRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:CredentialsIdRouteHandler" },
         { "@id": "urn:solid-server:auth:password:ForgotPasswordRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:IndexRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:LoginRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:LogoutRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:PasswordRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:PasswordIdRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:ResolveLoginHandler" },
+        { "@id": "urn:solid-server:auth:password:RegistrationRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:PickWebIdRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:PodRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:PromptRouteHandler" },
         { "@id": "urn:solid-server:auth:password:ResetPasswordRouteHandler" },
-        { "@id": "urn:solid-server:auth:password:CredentialsRouteHandler" }
+        { "@id": "urn:solid-server:auth:password:WebIdRouteHandler" },
+        { "@id": "urn:solid-server:auth:password:WebIdLinkRouteHandler" }
       ]
     }
   ]

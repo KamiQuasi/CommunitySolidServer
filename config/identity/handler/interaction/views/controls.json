@@ -4,26 +4,67 @@
     {
       "@id": "urn:solid-server:auth:password:ControlHandler",
       "@type": "ControlHandler",
+      "key": "controls",
       "controls": [
         {
-          "ControlHandler:_controls_key": "index",
-          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:IndexRoute" }
+          "ControlHandler:_controls_key": "main",
+          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:MainControlHandler" }
         },
         {
-          "ControlHandler:_controls_key": "prompt",
-          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:PromptRoute" }
+          "ControlHandler:_controls_key": "account",
+          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:AccountControlHandler" }
+        }
+      ]
+    },
+    {
+      "@id": "urn:solid-server:auth:password:MainControlHandler",
+      "@type": "StaticControlHandler",
+      "controls": [
+        {
+          "StaticControlHandler:_controls_key": "index",
+          "StaticControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:IndexRoute" }
         },
         {
-          "ControlHandler:_controls_key": "login",
-          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:LoginRoute" }
+          "StaticControlHandler:_controls_key": "login",
+          "StaticControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:LoginRoute" }
         },
         {
-          "ControlHandler:_controls_key": "forgotPassword",
-          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:ForgotPasswordRoute" }
+          "StaticControlHandler:_controls_key": "account",
+          "StaticControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:AccountRoute" }
         },
         {
-          "ControlHandler:_controls_key": "credentials",
-          "ControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:CredentialsRoute" }
+          "StaticControlHandler:_controls_key": "register",
+          "StaticControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:RegistrationRoute" }
+        }
+      ]
+    },
+    {
+      "@id": "urn:solid-server:auth:password:AccountControlHandler",
+      "@type": "AccountControlHandler",
+      "controls": [
+        {
+          "AccountControlHandler:_controls_key": "account",
+          "AccountControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:AccountIdRoute" }
+        },
+        {
+          "AccountControlHandler:_controls_key": "password",
+          "AccountControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:PasswordRoute" }
+        },
+        {
+          "AccountControlHandler:_controls_key": "pod",
+          "AccountControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:PodRoute" }
+        },
+        {
+          "AccountControlHandler:_controls_key": "webId",
+          "AccountControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:WebIdRoute" }
+        },
+        {
+          "AccountControlHandler:_controls_key": "credentials",
+          "AccountControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:CredentialsRoute" }
+        },
+        {
+          "AccountControlHandler:_controls_key": "logout",
+          "AccountControlHandler:_controls_value": { "@id": "urn:solid-server:auth:password:LogoutRoute" }
         }
       ]
     }

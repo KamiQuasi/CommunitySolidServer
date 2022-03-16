@@ -12,7 +12,7 @@ import type { Account,
   ResourceServer,
   UnknownObject,
   errors } from 'oidc-provider';
-import { Provider } from 'oidc-provider';
+import { interactionPolicy, Provider } from 'oidc-provider';
 import type { Operation } from '../../http/Operation';
 import type { ErrorHandler } from '../../http/output/error/ErrorHandler';
 import type { ResponseWriter } from '../../http/output/ResponseWriter';
@@ -22,12 +22,16 @@ import { InternalServerError } from '../../util/errors/InternalServerError';
 import { RedirectHttpError } from '../../util/errors/RedirectHttpError';
 import { guardStream } from '../../util/GuardedStream';
 import { joinUrl } from '../../util/PathUtil';
-import type { ClientCredentials } from '../interaction/email-password/credentials/ClientCredentialsAdapterFactory';
+import type { AccountStore } from '../account/AccountStore';
+import type { ClientCredentials } from '../interaction/credentials/ClientCredentialsAdapterFactory';
 import type { InteractionHandler } from '../interaction/InteractionHandler';
 import type { AdapterFactory } from '../storage/AdapterFactory';
 import type { ProviderFactory } from './ProviderFactory';
+const { base, Check, Prompt } = interactionPolicy;
 
 export interface IdentityProviderFactoryArgs {
+  // TODO: delete this again x3
+  accountStore: AccountStore;
   /**
    * Factory that creates the adapter used for OIDC data storage.
    */
@@ -47,7 +51,7 @@ export interface IdentityProviderFactoryArgs {
   /**
    * Storage containing the generated client credentials with their associated WebID.
    */
-  credentialStorage: KeyValueStorage<string, ClientCredentials>;
+  credentialsStorage: KeyValueStorage<string, ClientCredentials>;
   /**
    * Storage used to store cookie and JWT keys so they can be re-used in case of multithreading.
    */
@@ -77,12 +81,14 @@ const COOKIES_KEY = 'cookie-secret';
  * Routes will be updated based on the `baseUrl` and `oidcPath`.
  */
 export class IdentityProviderFactory implements ProviderFactory {
+  // TODO: DELETEME
+  private readonly accountStore: AccountStore;
   private readonly config: Configuration;
   private readonly adapterFactory: AdapterFactory;
   private readonly baseUrl: string;
   private readonly oidcPath: string;
   private readonly interactionHandler: InteractionHandler;
-  private readonly credentialStorage: KeyValueStorage<string, ClientCredentials>;
+  private readonly credentialsStorage: KeyValueStorage<string, ClientCredentials>;
   private readonly storage: KeyValueStorage<string, unknown>;
   private readonly showStackTrace: boolean;
   private readonly errorHandler: ErrorHandler;
@@ -98,11 +104,12 @@ export class IdentityProviderFactory implements ProviderFactory {
   public constructor(config: Configuration, args: IdentityProviderFactoryArgs) {
     this.config = config;
 
+    this.accountStore = args.accountStore;
     this.adapterFactory = args.adapterFactory;
     this.baseUrl = args.baseUrl;
     this.oidcPath = args.oidcPath;
     this.interactionHandler = args.interactionHandler;
-    this.credentialStorage = args.credentialStorage;
+    this.credentialsStorage = args.credentialsStorage;
     this.storage = args.storage;
     this.showStackTrace = args.showStackTrace;
     this.errorHandler = args.errorHandler;
@@ -131,6 +138,22 @@ export class IdentityProviderFactory implements ProviderFactory {
 
     // Render errors with our own error handler
     this.configureErrors(config);
+
+    // TODO: block below needs to go somewhere separately with typings and stuff
+    const check = new Check('no_account', 'An account cookie is required.', async(ctx): Promise<boolean> => {
+      // TODO: very hardcoded
+      const cookie = ctx.cookies.get('account');
+      let accountId: string | undefined;
+      if (cookie) {
+        accountId = await this.accountStore.findByCookie(cookie);
+      }
+      // Check needs to return true if the prompt has to trigger
+      return !accountId;
+    });
+    const prompt = new Prompt({ name: 'account', requestable: true }, check);
+    const policy = base();
+    policy.add(prompt, 0);
+    config.interactions!.policy = policy;
 
     // Allow provider to interpret reverse proxy headers
     const provider = new Provider(this.baseUrl, config);
@@ -244,7 +267,7 @@ export class IdentityProviderFactory implements ProviderFactory {
     config.extraTokenClaims = async(ctx, token): Promise<UnknownObject> =>
       this.isAccessToken(token) ?
         { webid: token.accountId } :
-        { webid: token.client && (await this.credentialStorage.get(token.client.clientId))?.webId };
+        { webid: token.client && (await this.credentialsStorage.get(token.client.clientId))?.webId };
 
     config.features = {
       ...config.features,

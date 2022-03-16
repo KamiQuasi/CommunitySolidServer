@@ -1,6 +1,6 @@
 import { writeJson } from 'fs-extra';
-import type { RegistrationManager } from '../../../src/identity/interaction/email-password/util/RegistrationManager';
-import { SeededPodInitializer } from '../../../src/init/SeededPodInitializer';
+import type { RegistrationManager } from '../../../src/identity/interaction/RegistrationHandler';
+import { SeededAccountInitializer } from '../../../src/init/SeededAccountInitializer';
 import { mockFileSystem } from '../../util/Util';
 
 jest.mock('fs');
@@ -35,13 +35,13 @@ describe('A SeededPodInitializer', (): void => {
 
   it('does not generate any accounts or pods if no config file is specified.', async(): Promise<void> => {
     configFilePath = null;
-    await new SeededPodInitializer(registrationManager, configFilePath).handle();
+    await new SeededAccountInitializer(registrationManager, configFilePath).handle();
     expect(registrationManager.validateInput).not.toHaveBeenCalled();
     expect(registrationManager.register).not.toHaveBeenCalled();
   });
 
   it('generates an account and a pod for every entry in the seeded pod configuration.', async(): Promise<void> => {
-    await new SeededPodInitializer(registrationManager, configFilePath).handle();
+    await new SeededAccountInitializer(registrationManager, configFilePath).handle();
     expect(registrationManager.validateInput).toHaveBeenCalledTimes(2);
     expect(registrationManager.register).toHaveBeenCalledTimes(2);
   });

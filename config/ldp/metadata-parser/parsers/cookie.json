@@ -1,0 +1,16 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
+  "@graph": [
+    {
+      "comment": "Converts cookies into RDF metadata.",
+      "@id": "urn:solid-server:default:CookieParser",
+      "@type": "CookieParser",
+      "cookieMap": [
+        {
+          "CookieParser:_cookieMap_key": "account",
+          "CookieParser:_cookieMap_value": "urn:npm:solid:community-server:http:accountCookie"
+        }
+      ]
+    }
+  ]
+}

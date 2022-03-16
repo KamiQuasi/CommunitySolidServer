@@ -30,10 +30,10 @@ export class HtmlViewHandler extends InteractionHandler {
   public constructor(index: InteractionRoute, templateEngine: TemplateEngine,
     templates: Record<string, InteractionRoute>) {
     super();
-    this.idpIndex = index.getPath();
+    this.idpIndex = index.getPath({})!;
     this.templateEngine = templateEngine;
     this.templates = Object.fromEntries(
-      Object.entries(templates).map(([ template, route ]): [ string, string ] => [ route.getPath(), template ]),
+      Object.entries(templates).map(([ template, route ]): [ string, string ] => [ route.getPath({})!, template ]),
     );
   }
 

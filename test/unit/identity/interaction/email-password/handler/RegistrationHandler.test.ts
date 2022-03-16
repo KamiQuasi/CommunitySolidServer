@@ -4,7 +4,7 @@ import {
 } from '../../../../../../src/identity/interaction/email-password/handler/RegistrationHandler';
 import type {
   RegistrationManager, RegistrationParams, RegistrationResponse,
-} from '../../../../../../src/identity/interaction/email-password/util/RegistrationManager';
+} from '../../../../../../src/identity/interaction/RegistrationHandler';
 import { readJsonStream } from '../../../../../../src/util/StreamUtil';
 import { createPostJsonOperation } from './Util';
 

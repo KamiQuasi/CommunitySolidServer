@@ -1,0 +1,48 @@
+{
+  "@context": "https://linkedsoftwaredependencies.org/bundles/npm/@solid/community-server/^5.0.0/components/context.jsonld",
+  "@graph": [
+    {
+      "comment": "TODO: does this belong here?",
+      "@id": "urn:solid-server:auth:password:RootPodViewHandler",
+      "@type": "CreatePodHandler",
+      "podManager": { "@id": "urn:solid-server:default:PodManager" },
+      "identifierGenerator": { "@id": "urn:solid-server:default:IdentifierGenerator" },
+      "webIdSuffix": "/profile/card#me",
+      "accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" },
+      "podRoute": { "@id": "urn:solid-server:auth:password:PodIdRoute" },
+      "allowRoot": true
+    },
+    {
+      "comment": "TODO: This route itself doesn't actually do anything (yet) but should still be added somewhere.",
+      "@id": "urn:solid-server:auth:password:PodIdRoute",
+      "@type": "IdInteractionRoute",
+      "base": { "@id": "urn:solid-server:auth:password:PodRoute" },
+      "idName": "podId"
+    },
+    {
+      "comment": "Handles pod creation.",
+      "@id": "urn:solid-server:auth:password:PodRouteHandler",
+      "@type": "InteractionRouteHandler",
+      "route": {
+        "@id": "urn:solid-server:auth:password:PodRoute",
+        "@type": "RelativePathInteractionRoute",
+        "base": { "@id": "urn:solid-server:auth:password:AccountIdRoute" },
+        "relativePath": "pod/"
+      },
+      "source": {
+        "@id": "urn:solid-server:auth:password:PodHandler",
+        "@type": "ViewInteractionHandler",
+        "source": {
+          "@id": "urn:solid-server:auth:password:PodViewHandler",
+          "@type": "CreatePodHandler",
+          "podManager": { "@id": "urn:solid-server:default:PodManager" },
+          "identifierGenerator": { "@id": "urn:solid-server:default:IdentifierGenerator" },
+          "webIdSuffix": "/profile/card#me",
+          "accountStore": { "@id": "urn:solid-server:auth:password:AccountStore" },
+          "podRoute": { "@id": "urn:solid-server:auth:password:PodIdRoute" },
+          "allowRoot": false
+        }
+      }
+    }
+  ]
+}

@@ -4,12 +4,11 @@ import { getLoggerFor } from '../logging/LogUtil';
 import type { OperationHttpHandlerInput } from '../server/OperationHttpHandler';
 import { OperationHttpHandler } from '../server/OperationHttpHandler';
 import type { RepresentationConverter } from '../storage/conversion/RepresentationConverter';
-import { APPLICATION_JSON } from '../util/ContentTypes';
+import { SOLID_HTTP } from '../util/Vocabularies';
+import type { AccountStore } from './account/AccountStore';
 import type { ProviderFactory } from './configuration/ProviderFactory';
-import type {
-  InteractionHandler,
-  Interaction,
-} from './interaction/InteractionHandler';
+import type { InteractionHandler,
+  Interaction } from './interaction/InteractionHandler';
 
 export interface IdentityProviderHttpHandlerArgs {
   /**
@@ -20,6 +19,10 @@ export interface IdentityProviderHttpHandlerArgs {
    * Used for converting the input data.
    */
   converter: RepresentationConverter;
+  /**
+   * Used to determine the account of the requesting agent.
+   */
+  accountStore: AccountStore;
   /**
    * Handles the requests.
    */
@@ -39,12 +42,14 @@ export class IdentityProviderHttpHandler extends OperationHttpHandler {
 
   private readonly providerFactory: ProviderFactory;
   private readonly converter: RepresentationConverter;
+  private readonly accountStore: AccountStore;
   private readonly handler: InteractionHandler;
 
   public constructor(args: IdentityProviderHttpHandlerArgs) {
     super();
     this.providerFactory = args.providerFactory;
     this.converter = args.converter;
+    this.accountStore = args.accountStore;
     this.handler = args.handler;
   }
 
@@ -59,23 +64,15 @@ export class IdentityProviderHttpHandler extends OperationHttpHandler {
       this.logger.debug('No active OIDC interaction found.');
     }
 
-    // Convert input data to JSON
-    // Allows us to still support form data
-    const { contentType } = operation.body.metadata;
-    if (contentType && contentType !== APPLICATION_JSON) {
-      this.logger.debug(`Converting input ${contentType} to ${APPLICATION_JSON}`);
-      const args = {
-        representation: operation.body,
-        preferences: { type: { [APPLICATION_JSON]: 1 }},
-        identifier: operation.target,
-      };
-      operation = {
-        ...operation,
-        body: await this.converter.handleSafe(args),
-      };
+    // Determine account
+    // TODO: extract cookie (potentially in external class)
+    const cookie = operation.body.metadata.get(SOLID_HTTP.terms.accountCookie)?.value;
+    let accountId: string | undefined;
+    if (cookie) {
+      accountId = await this.accountStore.findByCookie(cookie);
     }
 
-    const representation = await this.handler.handleSafe({ operation, oidcInteraction });
+    const representation = await this.handler.handleSafe({ operation, oidcInteraction, accountId });
     return new OkResponseDescription(representation.metadata, representation.data);
   }
 }

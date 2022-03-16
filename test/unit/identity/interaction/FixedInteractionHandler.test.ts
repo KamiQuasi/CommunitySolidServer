@@ -1,11 +1,11 @@
 import type { Operation } from '../../../../src/http/Operation';
-import { FixedInteractionHandler } from '../../../../src/identity/interaction/FixedInteractionHandler';
+import { StaticInteractionHandler } from '../../../../src/identity/interaction/StaticInteractionHandler';
 import { readJsonStream } from '../../../../src/util/StreamUtil';
 
 describe('A FixedInteractionHandler', (): void => {
   const json = { data: 'data' };
   const operation: Operation = { target: { path: 'http://example.com/test/' }} as any;
-  const handler = new FixedInteractionHandler(json);
+  const handler = new StaticInteractionHandler(json);
 
   it('returns the given JSON as response.', async(): Promise<void> => {
     const response = await handler.handle({ operation });

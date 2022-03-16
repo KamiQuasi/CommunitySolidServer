@@ -3,10 +3,10 @@ import { BasicRepresentation } from '../../../../../../src/http/representation/B
 import type { Representation } from '../../../../../../src/http/representation/Representation';
 import type {
   CredentialsHandler,
-} from '../../../../../../src/identity/interaction/email-password/credentials/CredentialsHandler';
+} from '../../../../../../src/identity/interaction/credentials/CredentialsHandler';
 import {
   EmailPasswordAuthorizer,
-} from '../../../../../../src/identity/interaction/email-password/credentials/EmailPasswordAuthorizer';
+} from '../../../../../../src/identity/interaction/credentials/EmailPasswordAuthorizer';
 import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
 import { APPLICATION_JSON } from '../../../../../../src/util/ContentTypes';
 import { MethodNotAllowedHttpError } from '../../../../../../src/util/errors/MethodNotAllowedHttpError';

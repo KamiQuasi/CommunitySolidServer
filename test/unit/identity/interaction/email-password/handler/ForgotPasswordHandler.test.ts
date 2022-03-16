@@ -1,8 +1,8 @@
 import type { Operation } from '../../../../../../src/http/Operation';
+import type { DELETEMEAccountStore } from '../../../../../../src/identity/account/DELETEMEAccountStore';
 import {
   ForgotPasswordHandler,
 } from '../../../../../../src/identity/interaction/email-password/handler/ForgotPasswordHandler';
-import type { AccountStore } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
 import type { EmailSender } from '../../../../../../src/identity/interaction/email-password/util/EmailSender';
 import type { InteractionRoute } from '../../../../../../src/identity/interaction/routing/InteractionRoute';
 import { readJsonStream } from '../../../../../../src/util/StreamUtil';
@@ -14,7 +14,7 @@ describe('A ForgotPasswordHandler', (): void => {
   const email = 'test@test.email';
   const recordId = '123456';
   const html = `<a href="/base/idp/resetpassword/?rid=${recordId}">Reset Password</a>`;
-  let accountStore: AccountStore;
+  let accountStore: DELETEMEAccountStore;
   let templateEngine: TemplateEngine<{ resetLink: string }>;
   let resetRoute: jest.Mocked<InteractionRoute>;
   let emailSender: EmailSender;
@@ -40,7 +40,7 @@ describe('A ForgotPasswordHandler', (): void => {
     } as any;
 
     handler = new ForgotPasswordHandler({
-      accountStore,
+      passwordStore: accountStore,
       templateEngine,
       emailSender,
       resetRoute,

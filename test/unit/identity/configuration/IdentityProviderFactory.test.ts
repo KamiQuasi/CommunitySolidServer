@@ -6,7 +6,7 @@ import { BasicRepresentation } from '../../../../src/http/representation/BasicRe
 import { IdentityProviderFactory } from '../../../../src/identity/configuration/IdentityProviderFactory';
 import type {
   ClientCredentials,
-} from '../../../../src/identity/interaction/email-password/credentials/ClientCredentialsAdapterFactory';
+} from '../../../../src/identity/interaction/credentials/ClientCredentialsAdapterFactory';
 import type { Interaction, InteractionHandler } from '../../../../src/identity/interaction/InteractionHandler';
 import type { AdapterFactory } from '../../../../src/identity/storage/AdapterFactory';
 import type { KeyValueStorage } from '../../../../src/storage/keyvalue/KeyValueStorage';
@@ -91,7 +91,7 @@ describe('An IdentityProviderFactory', (): void => {
       oidcPath,
       interactionHandler,
       storage,
-      credentialStorage,
+      credentialsStorage: credentialStorage,
       showStackTrace: true,
       errorHandler,
       responseWriter,
@@ -175,7 +175,7 @@ describe('An IdentityProviderFactory', (): void => {
       oidcPath,
       interactionHandler,
       storage,
-      credentialStorage,
+      credentialsStorage: credentialStorage,
       showStackTrace: true,
       errorHandler,
       responseWriter,
@@ -199,7 +199,7 @@ describe('An IdentityProviderFactory', (): void => {
       oidcPath,
       interactionHandler,
       storage,
-      credentialStorage,
+      credentialsStorage: credentialStorage,
       showStackTrace: true,
       errorHandler,
       responseWriter,

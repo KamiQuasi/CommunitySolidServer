@@ -1,8 +1,8 @@
-import type { AccountSettings } from '../../../../../../src/identity/interaction/email-password/storage/AccountStore';
+import type { AccountSettings } from '../../../../../../src/identity/account/DELETEMEAccountStore';
 import type {
   EmailPasswordData,
-} from '../../../../../../src/identity/interaction/email-password/storage/BaseAccountStore';
-import { BaseAccountStore } from '../../../../../../src/identity/interaction/email-password/storage/BaseAccountStore';
+} from '../../../../../../src/identity/account/DELETEMEBaseAccountStore';
+import { DELETEMEBaseAccountStore } from '../../../../../../src/identity/account/DELETEMEBaseAccountStore';
 import type { ExpiringStorage } from '../../../../../../src/storage/keyvalue/ExpiringStorage';
 import type { KeyValueStorage } from '../../../../../../src/storage/keyvalue/KeyValueStorage';
 
@@ -10,7 +10,7 @@ describe('A BaseAccountStore', (): void => {
   let storage: KeyValueStorage<string, EmailPasswordData>;
   let forgotPasswordStorage: ExpiringStorage<string, EmailPasswordData>;
   const saltRounds = 11;
-  let store: BaseAccountStore;
+  let store: DELETEMEBaseAccountStore;
   const email = 'test@test.com';
   const webId = 'http://test.com/#webId';
   const password = 'password!';
@@ -30,7 +30,7 @@ describe('A BaseAccountStore', (): void => {
       delete: jest.fn((id: string): any => map.delete(id)),
     } as any;
 
-    store = new BaseAccountStore(storage, forgotPasswordStorage, saltRounds);
+    store = new DELETEMEBaseAccountStore(storage, forgotPasswordStorage, saltRounds);
   });
 
   it('can create accounts.', async(): Promise<void> => {
