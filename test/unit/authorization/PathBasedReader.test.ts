@@ -1,26 +1,28 @@
 import { CredentialGroup } from '../../../src/authentication/Credentials';
 import { PathBasedReader } from '../../../src/authorization/PathBasedReader';
 import type { PermissionReader, PermissionReaderInput } from '../../../src/authorization/PermissionReader';
-import type { PermissionSet } from '../../../src/authorization/permissions/Permissions';
-import { NotImplementedHttpError } from '../../../src/util/errors/NotImplementedHttpError';
+import type { PermissionMap, PermissionSet } from '../../../src/authorization/permissions/Permissions';
+import { IdentifierMap } from '../../../src/authorization/permissions/Permissions';
+import type { ResourceIdentifier } from '../../../src/http/representation/ResourceIdentifier';
+import { mapIterable } from '../../../src/util/IterableUtil';
+import { joinUrl } from '../../../src/util/PathUtil';
+import { compareMaps } from '../../util/Util';
 
 describe('A PathBasedReader', (): void => {
   const baseUrl = 'http://test.com/foo/';
   const permissionSet: PermissionSet = { [CredentialGroup.agent]: { read: true }};
-  let input: PermissionReaderInput;
   let readers: jest.Mocked<PermissionReader>[];
   let reader: PathBasedReader;
 
-  beforeEach(async(): Promise<void> => {
-    input = {
-      identifier: { path: `${baseUrl}first` },
-      credentials: {},
-      modes: new Set(),
-    };
+  function handleSafe({ accessMap }: PermissionReaderInput): PermissionMap {
+    return new IdentifierMap(mapIterable(accessMap.keys(), (identifier): [ResourceIdentifier, PermissionSet] =>
+      [ identifier, permissionSet ]));
+  }
 
+  beforeEach(async(): Promise<void> => {
     readers = [
-      { canHandle: jest.fn(), handle: jest.fn().mockResolvedValue(permissionSet) },
-      { canHandle: jest.fn(), handle: jest.fn().mockResolvedValue(permissionSet) },
+      { canHandle: jest.fn(), handleSafe: jest.fn(handleSafe) },
+      { canHandle: jest.fn(), handleSafe: jest.fn(handleSafe) },
     ] as any;
     const paths = {
       '/first': readers[0],
@@ -29,26 +31,31 @@ describe('A PathBasedReader', (): void => {
     reader = new PathBasedReader(baseUrl, paths);
   });
 
-  it('can only handle requests with a matching path.', async(): Promise<void> => {
-    input.identifier.path = 'http://wrongsite/';
-    await expect(reader.canHandle(input)).rejects.toThrow(NotImplementedHttpError);
-    input.identifier.path = `${baseUrl}third`;
-    await expect(reader.canHandle(input)).rejects.toThrow(NotImplementedHttpError);
-    input.identifier.path = `${baseUrl}first`;
-    await expect(reader.canHandle(input)).resolves.toBeUndefined();
-    input.identifier.path = `${baseUrl}second`;
-    await expect(reader.canHandle(input)).resolves.toBeUndefined();
-  });
-
-  it('can only handle requests supported by the stored readers.', async(): Promise<void> => {
-    await expect(reader.canHandle(input)).resolves.toBeUndefined();
-    readers[0].canHandle.mockRejectedValueOnce(new Error('not supported'));
-    await expect(reader.canHandle(input)).rejects.toThrow('not supported');
-  });
-
   it('passes the handle requests to the matching reader.', async(): Promise<void> => {
-    await expect(reader.handle(input)).resolves.toBe(permissionSet);
-    expect(readers[0].handle).toHaveBeenCalledTimes(1);
-    expect(readers[0].handle).toHaveBeenLastCalledWith(input);
+    const input: PermissionReaderInput = {
+      credentials: {},
+      accessMap: new IdentifierMap([
+        [{ path: joinUrl(baseUrl, 'first') }, new Set() ],
+        [{ path: joinUrl(baseUrl, 'second') }, new Set() ],
+        [{ path: joinUrl(baseUrl, 'nothere') }, new Set() ],
+        [{ path: 'http://wrongsite' }, new Set() ],
+      ]),
+    };
+
+    const result = new IdentifierMap([
+      [{ path: joinUrl(baseUrl, 'first') }, permissionSet ],
+      [{ path: joinUrl(baseUrl, 'second') }, permissionSet ],
+    ]);
+
+    await expect(reader.handle(input)).resolves.toEqual(result);
+    expect(readers[0].handleSafe).toHaveBeenCalledTimes(1);
+    expect(readers[0].handleSafe.mock.calls[0][0].credentials).toEqual({});
+    compareMaps(readers[0].handleSafe.mock.calls[0][0].accessMap,
+      new IdentifierMap([[{ path: joinUrl(baseUrl, 'first') }, new Set() ]]));
+
+    expect(readers[1].handleSafe).toHaveBeenCalledTimes(1);
+    expect(readers[1].handleSafe.mock.calls[0][0].credentials).toEqual({});
+    compareMaps(readers[1].handleSafe.mock.calls[0][0].accessMap,
+      new IdentifierMap([[{ path: joinUrl(baseUrl, 'second') }, new Set() ]]));
   });
 });

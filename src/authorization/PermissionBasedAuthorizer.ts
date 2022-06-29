@@ -31,28 +31,29 @@ export class PermissionBasedAuthorizer extends Authorizer {
   }
 
   public async handle(input: AuthorizerInput): Promise<void> {
-    const { credentials, modes, identifier, permissionSet } = input;
-
-    const modeString = [ ...modes ].join(',');
-    this.logger.debug(`Checking if ${credentials.agent?.webId} has ${modeString} permissions for ${identifier.path}`);
+    const { credentials, accessMap, permissionMap } = input;
 
     // Ensure all required modes are within the agent's permissions.
-    for (const mode of modes) {
-      try {
-        this.requireModePermission(credentials, permissionSet, mode);
-      } catch (error: unknown) {
-        // If we know the operation will return a 404 regardless (= resource does not exist and is not being created),
-        // and the agent is allowed to know about its existence (= the agent has Read permissions),
-        // then immediately send the 404 here, as it makes any other agent permissions irrelevant.
-        const exposeExistence = this.hasModePermission(permissionSet, AccessMode.read);
-        if (exposeExistence && !modes.has(AccessMode.create) && !await this.resourceSet.hasResource(identifier)) {
-          throw new NotFoundHttpError();
+    for (const [ identifier, modes ] of accessMap) {
+      const modeString = [ ...modes ].join(',');
+      this.logger.debug(`Checking if ${credentials.agent?.webId} has ${modeString} permissions for ${identifier.path}`);
+      for (const mode of modes) {
+        try {
+          this.requireModePermission(credentials, mode, permissionMap.get(identifier));
+        } catch (error: unknown) {
+          // If we know the operation will return a 404 regardless (= resource does not exist and is not being created),
+          // and the agent is allowed to know about its existence (= the agent has Read permissions),
+          // then immediately send the 404 here, as it makes any other agent permissions irrelevant.
+          const exposeExistence = this.hasModePermission(AccessMode.read, permissionMap.get(identifier));
+          if (exposeExistence && !modes.has(AccessMode.create) && !await this.resourceSet.hasResource(identifier)) {
+            throw new NotFoundHttpError();
+          }
+          // Otherwise, deny access based on existing grounds.
+          throw error;
         }
-        // Otherwise, deny access based on existing grounds.
-        throw error;
       }
+      this.logger.debug(`${JSON.stringify(credentials)} has ${modeString} permissions for ${identifier.path}`);
     }
-    this.logger.debug(`${JSON.stringify(credentials)} has ${modeString} permissions for ${identifier.path}`);
   }
 
   /**
@@ -63,8 +64,8 @@ export class PermissionBasedAuthorizer extends Authorizer {
    * @param permissionSet - PermissionSet describing the available permissions of the credentials.
    * @param mode - Which mode is requested.
    */
-  private requireModePermission(credentials: CredentialSet, permissionSet: PermissionSet, mode: AccessMode): void {
-    if (!this.hasModePermission(permissionSet, mode)) {
+  private requireModePermission(credentials: CredentialSet, mode: AccessMode, permissionSet?: PermissionSet): void {
+    if (!this.hasModePermission(mode, permissionSet)) {
       if (this.isAuthenticated(credentials)) {
         this.logger.warn(`Agent ${credentials.agent!.webId} has no ${mode} permissions`);
         throw new ForbiddenHttpError();
@@ -81,7 +82,10 @@ export class PermissionBasedAuthorizer extends Authorizer {
   /**
    * Checks if one of the Permissions in the PermissionSet grants permission to use the given mode.
    */
-  private hasModePermission(permissionSet: PermissionSet, mode: AccessMode): boolean {
+  private hasModePermission(mode: AccessMode, permissionSet?: PermissionSet): boolean {
+    if (!permissionSet) {
+      return false;
+    }
     for (const permissions of Object.values(permissionSet)) {
       if (permissions[mode]) {
         return true;

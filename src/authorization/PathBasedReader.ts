@@ -1,9 +1,10 @@
-import { NotImplementedHttpError } from '../util/errors/NotImplementedHttpError';
+import { getLoggerFor } from '../logging/LogUtil';
+import { concatIterables } from '../util/IterableUtil';
 import { ensureTrailingSlash, trimTrailingSlashes } from '../util/PathUtil';
-
 import type { PermissionReaderInput } from './PermissionReader';
 import { PermissionReader } from './PermissionReader';
-import type { PermissionSet } from './permissions/Permissions';
+import type { AccessMap, PermissionMap } from './permissions/Permissions';
+import { IdentifierMap } from './permissions/Permissions';
 
 /**
  * Redirects requests to specific PermissionReaders based on their identifier.
@@ -14,6 +15,8 @@ import type { PermissionSet } from './permissions/Permissions';
  * Will error if no match is found.
  */
 export class PathBasedReader extends PermissionReader {
+  protected readonly logger = getLoggerFor(this);
+
   private readonly baseUrl: string;
   private readonly paths: Map<RegExp, PermissionReader>;
 
@@ -25,30 +28,47 @@ export class PathBasedReader extends PermissionReader {
     this.paths = new Map(entries);
   }
 
-  public async canHandle(input: PermissionReaderInput): Promise<void> {
-    const reader = this.findReader(input.identifier.path);
-    await reader.canHandle(input);
+  public async handle(input: PermissionReaderInput): Promise<PermissionMap> {
+    const results: PermissionMap[] = [];
+    for (const [ reader, accessMap ] of this.matchReaders(input.accessMap)) {
+      results.push(await reader.handleSafe({ credentials: input.credentials, accessMap }));
+    }
+    return new IdentifierMap(concatIterables(results));
   }
 
-  public async handle(input: PermissionReaderInput): Promise<PermissionSet> {
-    const reader = this.findReader(input.identifier.path);
-    return reader.handle(input);
+  /**
+   * Returns all readers that match with at least 1 entry from the AccessMap.
+   * These readers are mapped to a map containing all relevant resources.
+   */
+  private matchReaders(accessMap: AccessMap): Map<PermissionReader, AccessMap> {
+    const result = new Map<PermissionReader, AccessMap>();
+    for (const [ identifier, modes ] of accessMap) {
+      const reader = this.findReader(identifier.path);
+      if (reader) {
+        let matches = result.get(reader);
+        if (!matches) {
+          matches = new IdentifierMap();
+          result.set(reader, matches);
+        }
+        matches.set(identifier, modes);
+      }
+    }
+    return result;
   }
 
   /**
    * Find the PermissionReader corresponding to the given path.
-   * Errors if there is no match.
    */
-  private findReader(path: string): PermissionReader {
+  private findReader(path: string): PermissionReader | undefined {
     if (path.startsWith(this.baseUrl)) {
       // We want to keep the leading slash
       const relative = path.slice(trimTrailingSlashes(this.baseUrl).length);
       for (const [ regex, reader ] of this.paths) {
         if (regex.test(relative)) {
+          this.logger.debug(`Matched path for ${path}`);
           return reader;
         }
       }
     }
-    throw new NotImplementedHttpError('No regex matches the given path.');
   }
 }

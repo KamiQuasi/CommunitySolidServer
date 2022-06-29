@@ -1,7 +1,8 @@
 import type { CredentialGroup } from '../authentication/Credentials';
 import { UnionHandler } from '../util/handlers/UnionHandler';
 import type { PermissionReader } from './PermissionReader';
-import type { Permission, PermissionSet } from './permissions/Permissions';
+import type { Permission, PermissionMap } from './permissions/Permissions';
+import { IdentifierMap } from './permissions/Permissions';
 
 /**
  * Combines the results of multiple PermissionReaders.
@@ -12,14 +13,28 @@ export class UnionPermissionReader extends UnionHandler<PermissionReader> {
     super(readers);
   }
 
-  protected async combine(results: PermissionSet[]): Promise<PermissionSet> {
-    const result: PermissionSet = {};
-    for (const permissionSet of results) {
-      for (const [ key, value ] of Object.entries(permissionSet) as [ CredentialGroup, Permission | undefined ][]) {
-        result[key] = this.applyPermissions(value, result[key]);
-      }
+  protected async combine(results: PermissionMap[]): Promise<PermissionMap> {
+    const result: PermissionMap = new IdentifierMap();
+    for (const permissionMap of results) {
+      this.applyPermissionMap(permissionMap, result);
     }
     return result;
+  }
+
+  /**
+   * Applies all entries of the given map to the result map.
+   */
+  private applyPermissionMap(permissionMap: PermissionMap, result: PermissionMap): void {
+    for (const [ identifier, permissionSet ] of permissionMap) {
+      for (const [ credential, permission ] of Object.entries(permissionSet) as [CredentialGroup, Permission][]) {
+        let resultSet = result.get(identifier);
+        if (!resultSet) {
+          resultSet = {};
+          result.set(identifier, resultSet);
+        }
+        resultSet[credential] = this.applyPermissions(permission, resultSet[credential]);
+      }
+    }
   }
 
   /**
