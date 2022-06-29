@@ -1,7 +1,6 @@
 import type { CredentialSet } from '../authentication/Credentials';
-import type { ResourceIdentifier } from '../http/representation/ResourceIdentifier';
 import { AsyncHandler } from '../util/handlers/AsyncHandler';
-import type { AccessMode, PermissionSet } from './permissions/Permissions';
+import type { AccessMap, PermissionMap } from './permissions/Permissions';
 
 export interface PermissionReaderInput {
   /**
@@ -9,18 +8,16 @@ export interface PermissionReaderInput {
    */
   credentials: CredentialSet;
   /**
-   * Identifier of the resource that will be read/modified.
-   */
-  identifier: ResourceIdentifier;
-  /**
-   * This is the minimum set of access modes the output needs to contain,
+   * This is the minimum set of access modes the output needs to contain per resource,
    * allowing the handler to limit its search space to this set.
-   * However, non-exhaustive information about other access modes can still be returned.
+   * However, non-exhaustive information about other access modes and resources can still be returned.
    */
-  modes: Set<AccessMode>;
+  accessMap: AccessMap;
 }
 
 /**
  * Discovers the permissions of the given credentials on the given identifier.
+ * In case the reader finds no permission for the requested identifiers and credentials
+ * it can return an empty or incomplete map.
  */
-export abstract class PermissionReader extends AsyncHandler<PermissionReaderInput, PermissionSet> {}
+export abstract class PermissionReader extends AsyncHandler<PermissionReaderInput, PermissionMap> {}

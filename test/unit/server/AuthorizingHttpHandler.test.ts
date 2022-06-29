@@ -3,7 +3,8 @@ import type { CredentialsExtractor } from '../../../src/authentication/Credentia
 import type { Authorizer } from '../../../src/authorization/Authorizer';
 import type { PermissionReader } from '../../../src/authorization/PermissionReader';
 import type { ModesExtractor } from '../../../src/authorization/permissions/ModesExtractor';
-import { AccessMode } from '../../../src/authorization/permissions/Permissions';
+import type { AccessMap, PermissionMap } from '../../../src/authorization/permissions/Permissions';
+import { AccessMode, IdentifierMap } from '../../../src/authorization/permissions/Permissions';
 import type { Operation } from '../../../src/http/Operation';
 import { BasicRepresentation } from '../../../src/http/representation/BasicRepresentation';
 import { AuthorizingHttpHandler } from '../../../src/server/AuthorizingHttpHandler';
@@ -14,8 +15,9 @@ import { ForbiddenHttpError } from '../../../src/util/errors/ForbiddenHttpError'
 
 describe('An AuthorizingHttpHandler', (): void => {
   const credentials = { [CredentialGroup.public]: {}};
-  const modes = new Set([ AccessMode.read ]);
-  const permissionSet = { [CredentialGroup.public]: { read: true }};
+  const target = { path: 'http://test.com/foo' };
+  const accessMap: AccessMap = new IdentifierMap([[ target, new Set([ AccessMode.read ]) ]]);
+  const permissionMap: PermissionMap = new IdentifierMap([[ target, { [CredentialGroup.public]: { read: true }}]]);
   const request: HttpRequest = {} as any;
   const response: HttpResponse = {} as any;
   let operation: Operation;
@@ -28,7 +30,7 @@ describe('An AuthorizingHttpHandler', (): void => {
 
   beforeEach(async(): Promise<void> => {
     operation = {
-      target: { path: 'http://test.com/foo' },
+      target,
       method: 'GET',
       preferences: {},
       body: new BasicRepresentation(),
@@ -38,10 +40,10 @@ describe('An AuthorizingHttpHandler', (): void => {
       handleSafe: jest.fn().mockResolvedValue(credentials),
     } as any;
     modesExtractor = {
-      handleSafe: jest.fn().mockResolvedValue(modes),
+      handleSafe: jest.fn().mockResolvedValue(accessMap),
     } as any;
     permissionReader = {
-      handleSafe: jest.fn().mockResolvedValue(permissionSet),
+      handleSafe: jest.fn().mockResolvedValue(permissionMap),
     } as any;
     authorizer = {
       handleSafe: jest.fn(),
@@ -62,13 +64,16 @@ describe('An AuthorizingHttpHandler', (): void => {
     expect(modesExtractor.handleSafe).toHaveBeenCalledTimes(1);
     expect(modesExtractor.handleSafe).toHaveBeenLastCalledWith(operation);
     expect(permissionReader.handleSafe).toHaveBeenCalledTimes(1);
-    expect(permissionReader.handleSafe).toHaveBeenLastCalledWith({ credentials, identifier: operation.target, modes });
+    expect(permissionReader.handleSafe).toHaveBeenLastCalledWith(
+      { credentials, accessMap },
+    );
     expect(authorizer.handleSafe).toHaveBeenCalledTimes(1);
-    expect(authorizer.handleSafe)
-      .toHaveBeenLastCalledWith({ credentials, identifier: operation.target, modes, permissionSet });
+    expect(authorizer.handleSafe).toHaveBeenLastCalledWith(
+      { credentials, accessMap, permissionMap },
+    );
     expect(source.handleSafe).toHaveBeenCalledTimes(1);
     expect(source.handleSafe).toHaveBeenLastCalledWith({ request, response, operation });
-    expect(operation.permissionSet).toBe(permissionSet);
+    expect(operation.permissionMap).toBe(permissionMap);
   });
 
   it('errors if authorization fails.', async(): Promise<void> => {

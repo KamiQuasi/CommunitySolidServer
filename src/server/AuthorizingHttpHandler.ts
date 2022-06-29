@@ -63,15 +63,15 @@ export class AuthorizingHttpHandler extends OperationHttpHandler {
     const credentials: CredentialSet = await this.credentialsExtractor.handleSafe(request);
     this.logger.verbose(`Extracted credentials: ${JSON.stringify(credentials)}`);
 
-    const modes = await this.modesExtractor.handleSafe(operation);
-    this.logger.verbose(`Required modes are read: ${[ ...modes ].join(',')}`);
+    const accessMap = await this.modesExtractor.handleSafe(operation);
+    this.logger.verbose(`Required modes are read: ${[ ...accessMap ].join(',')}`);
 
-    const permissionSet = await this.permissionReader.handleSafe({ credentials, identifier: operation.target, modes });
-    this.logger.verbose(`Available permissions are ${JSON.stringify(permissionSet)}`);
+    const permissionMap = await this.permissionReader.handleSafe({ credentials, accessMap });
+    this.logger.verbose(`Available permissions are ${JSON.stringify(permissionMap)}`);
 
     try {
-      await this.authorizer.handleSafe({ credentials, identifier: operation.target, modes, permissionSet });
-      operation.permissionSet = permissionSet;
+      await this.authorizer.handleSafe({ credentials, accessMap, permissionMap });
+      operation.permissionMap = permissionMap;
     } catch (error: unknown) {
       this.logger.verbose(`Authorization failed: ${(error as any).message}`);
       throw error;
