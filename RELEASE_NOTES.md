@@ -39,7 +39,11 @@ The following changes are relevant for v4 custom configs that replaced certain f
 - The `IdentityProviderFactory` inputs have been extended.
   - `/identity/handler/provider-factory/identity.json`
 - LDP components have slightly changed so the preference parser is in a separate config file.
-  - `/config/ldp/handler/*`
+  - `/ldp/handler/*`
+- `IntermediateModesExtractor` has been added to the `ModesExtractors`
+  - `/ldp/modes/default.json`
+- The `PermissionReader` structure has changed to be more consistent.
+  - `/ldp/authorization/*`
 
 ### Interface changes
 These changes are relevant if you wrote custom modules for the server that depend on existing interfaces.
@@ -49,6 +53,7 @@ These changes are relevant if you wrote custom modules for the server that depen
 - Both `TemplateEngine` implementations now take a `baseUrl` parameter as input.
 - The `IdentityProviderFactory` and `ConvertingErrorHandler` now additionally take a `PreferenceParser` as input.
 - Error handlers now take the incoming HttpRequest as input instead of just the preferences.
+- All permission related interfaces have changed to support permissions over multiple identifiers.
 
 A new interface `SingleThreaded` has been added. This empty interface can be implemented to mark a component as not-threadsafe. When the CSS starts in multithreaded mode, it will error and halt if any SingleThreaded components are instantiated.
 
