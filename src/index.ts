@@ -442,6 +442,7 @@ export * from './util/templates/TemplateEngine';
 export * from './util/ContentTypes';
 export * from './util/FetchUtil';
 export * from './util/GuardedStream';
+export * from './util/HashMap';
 export * from './util/HeaderUtil';
 export * from './util/IterableUtil';
 export * from './util/PathUtil';
