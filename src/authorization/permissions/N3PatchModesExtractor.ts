@@ -4,7 +4,8 @@ import { isN3Patch } from '../../http/representation/N3Patch';
 import type { ResourceSet } from '../../storage/ResourceSet';
 import { NotImplementedHttpError } from '../../util/errors/NotImplementedHttpError';
 import { ModesExtractor } from './ModesExtractor';
-import { AccessMode } from './Permissions';
+import type { AccessMap } from './Permissions';
+import { AccessMode, IdentifierMap } from './Permissions';
 
 /**
  * Extracts the required access modes from an N3 Patch.
@@ -33,7 +34,7 @@ export class N3PatchModesExtractor extends ModesExtractor {
     }
   }
 
-  public async handle({ body, target }: Operation): Promise<Set<AccessMode>> {
+  public async handle({ body, target }: Operation): Promise<AccessMap> {
     const { deletes, inserts, conditions } = body as N3Patch;
 
     const accessModes = new Set<AccessMode>();
@@ -55,6 +56,6 @@ export class N3PatchModesExtractor extends ModesExtractor {
       accessModes.add(AccessMode.write);
     }
 
-    return accessModes;
+    return new IdentifierMap([[ target, accessModes ]]);
   }
 }

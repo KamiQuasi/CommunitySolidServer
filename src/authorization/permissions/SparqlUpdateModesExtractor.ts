@@ -5,7 +5,8 @@ import type { SparqlUpdatePatch } from '../../http/representation/SparqlUpdatePa
 import type { ResourceSet } from '../../storage/ResourceSet';
 import { NotImplementedHttpError } from '../../util/errors/NotImplementedHttpError';
 import { ModesExtractor } from './ModesExtractor';
-import { AccessMode } from './Permissions';
+import type { AccessMap } from './Permissions';
+import { AccessMode, IdentifierMap } from './Permissions';
 
 /**
  * Generates permissions for a SPARQL DELETE/INSERT body.
@@ -34,13 +35,14 @@ export class SparqlUpdateModesExtractor extends ModesExtractor {
     }
   }
 
-  public async handle({ body, target }: Operation): Promise<Set<AccessMode>> {
+  public async handle({ body, target }: Operation): Promise<AccessMap> {
     // Verified in `canHandle` call
     const update = (body as SparqlUpdatePatch).algebra as Algebra.DeleteInsert;
     const modes = new Set<AccessMode>();
+    const result = new IdentifierMap([[ target, modes ]]);
 
     if (this.isNop(update)) {
-      return modes;
+      return result;
     }
 
     // Access modes inspired by the requirements on N3 Patch requests
@@ -58,7 +60,7 @@ export class SparqlUpdateModesExtractor extends ModesExtractor {
       modes.add(AccessMode.write);
     }
 
-    return modes;
+    return result;
   }
 
   private isSparql(data: Representation): data is SparqlUpdatePatch {

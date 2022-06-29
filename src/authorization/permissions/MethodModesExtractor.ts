@@ -3,7 +3,8 @@ import type { ResourceSet } from '../../storage/ResourceSet';
 import { NotImplementedHttpError } from '../../util/errors/NotImplementedHttpError';
 import { isContainerIdentifier } from '../../util/PathUtil';
 import { ModesExtractor } from './ModesExtractor';
-import { AccessMode } from './Permissions';
+import type { AccessMap } from './Permissions';
+import { AccessMode, IdentifierMap } from './Permissions';
 
 const READ_METHODS = new Set([ 'OPTIONS', 'GET', 'HEAD' ]);
 const SUPPORTED_METHODS = new Set([ ...READ_METHODS, 'PUT', 'POST', 'DELETE' ]);
@@ -31,7 +32,7 @@ export class MethodModesExtractor extends ModesExtractor {
     }
   }
 
-  public async handle({ method, target }: Operation): Promise<Set<AccessMode>> {
+  public async handle({ method, target }: Operation): Promise<AccessMap> {
     const modes = new Set<AccessMode>();
     // Reading requires Read permissions on the resource
     if (READ_METHODS.has(method)) {
@@ -58,6 +59,6 @@ export class MethodModesExtractor extends ModesExtractor {
         modes.add(AccessMode.read);
       }
     }
-    return modes;
+    return new IdentifierMap([[ target, modes ]]);
   }
 }
