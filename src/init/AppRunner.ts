@@ -112,7 +112,9 @@ export class AppRunner {
       .usage('node ./bin/server.js [args]')
       .options(CORE_CLI_PARAMETERS)
       // We disable help here as it would only show the core parameters
-      .help(false);
+      .help(false)
+      // We also read from environment variables
+      .env('CSS');
 
     const params = await yargv.parse();
 
