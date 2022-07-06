@@ -121,16 +121,12 @@ to some commonly used settings:
 | `--seededPodConfigJson` |                           | Path to the file that keeps track of seeded Pod configurations. |
 | `--mainModulePath, -m` |                            | Path from where Components.js will start its lookup when initializing configurations.                                                |
 
-Parameters can also be passed through environment variables:
+### 🖥️ Environment variables
+Parameters can also be passed through environment variables. 
 
-| parameter name         | environment variable name
-|------------------------|----------------------------
-| `--port, -p`           | `CSS_PORT`
-| `--baseUrl, -b`        | `CSS_BASE_URL`
-| `--loggingLevel, -l`   | `CSS_LOGGING_LEVEL`
-| `--config, -c`         | `CSS_CONFIG`
-| `--rootFilePath, -f`   | `CSS_ROOT_FILE_PATH`
-| `--showStackTrace, -t` | `CSS_SHOW_STACK_TRACE`
+They are prefixed with `CSS_` and converted from `camelCase` to `CAMEL_CASE`
+
+> eg. `--showStackTrace` => `CSS_SHOW_STACK_TRACE`
 
 **Note: command-line arguments will always override environment variables!**
 
